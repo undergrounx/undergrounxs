@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Avenor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="site-content.js"></script>
+<style>
+  :root{
+    --bg:#0b0d0c; --panel:#141713; --panel-2:#171b16; --border:#262b25; --text:#f2f3ef;
+    --muted:#9aa39a; --muted-2:#6f766e; --green:#7ea583; --green-bright:#a9d3ad; --green-deep:#2c3a2d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.brand{font-family:'Manrope',sans-serif;}
+
+  .layout{display:grid;grid-template-columns:250px 1fr;min-height:100vh;}
+  .sidebar{border-right:1px solid var(--border);padding:26px 20px;display:flex;flex-direction:column;}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;margin-bottom:34px;padding:0 6px;}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;
+    color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:4px;transition:all .15s;
+  }
+  .nav-item:hover{background:var(--panel-2);color:var(--text);}
+  .nav-item.active{background:var(--green-deep);color:var(--green-bright);}
+  .sidebar-footer{margin-top:auto;padding-top:20px;border-top:1px solid var(--border);}
+  .logout-btn{
+    width:100%;padding:10px;border-radius:10px;background:transparent;border:1px solid #33362f;
+    color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .logout-btn:hover{border-color:#575d51;color:var(--text);}
+
+  .main{padding:32px 40px;max-width:900px;}
+  .main h2{font-size:24px;margin:0 0 4px;}
+  .main .desc{color:var(--muted);font-size:13.5px;margin:0 0 28px;}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:26px 28px;margin-bottom:20px;}
+  .panel h3{font-size:15px;margin:0 0 18px;color:var(--green-bright);}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:7px;color:#cfd6cd;}
+  .field input, .field textarea{
+    width:100%;background:#0f120e;border:1px solid #2a2f26;border-radius:10px;
+    padding:11px 14px;color:var(--text);font-size:13.5px;font-family:'Inter',sans-serif;
+  }
+  .field input:focus, .field textarea:focus{outline:none;border-color:var(--green);}
+  .field textarea{resize:vertical;min-height:60px;}
+
+  .row-list-item{
+    display:flex;gap:8px;align-items:center;margin-bottom:8px;
+  }
+  .row-list-item input{flex:1;}
+  .icon-btn{
+    width:34px;height:34px;flex-shrink:0;border-radius:8px;background:#1b211b;border:1px solid #2a2f26;
+    color:var(--muted);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;
+  }
+  .icon-btn:hover{color:var(--text);border-color:#575d51;}
+  .add-btn{
+    display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green-bright);
+    background:var(--green-deep);border:none;border-radius:8px;padding:8px 14px;cursor:pointer;margin-top:4px;
+  }
+
+  .card-block{border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px;position:relative;background:#101310;}
+  .card-block .remove-card{position:absolute;top:14px;right:14px;}
+
+  .btn-save{
+    padding:12px 26px;border-radius:999px;font-weight:700;font-size:14px;
+    background:linear-gradient(180deg,#33422f,#20291d);color:var(--green-bright);
+    border:1px solid #3c4a37;cursor:pointer;
+  }
+  .btn-save:hover{filter:brightness(1.15);}
+  .btn-save:disabled{opacity:.6;cursor:not-allowed;}
+  .save-bar{display:flex;align-items:center;gap:14px;position:sticky;bottom:0;background:var(--bg);padding:16px 0;}
+  .save-status{font-size:13px;color:var(--muted);}
+  .save-status.ok{color:var(--green-bright);}
+  .save-status.err{color:#e8a6a6;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{text-align:left;color:var(--muted-2);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding:10px 12px;border-bottom:1px solid var(--border);}
+  td{padding:12px;border-bottom:1px solid var(--border);color:#cfd6cd;}
+  tr:last-child td{border-bottom:none;}
+  .empty-state{color:var(--muted);font-size:13.5px;text-align:center;padding:40px 0;}
+
+  .tab-section{display:none;}
+  .tab-section.active{display:block;}
+  .gate{display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">Memeriksa sesi login...</div>
+
+<div class="layout" id="dashboard-layout" style="display:none;">
+  <div class="sidebar">
+    <div class="brand">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#e9ede7"/></svg>
+      Avenor Admin
+    </div>
+    <div class="nav-item active" data-tab="hero" onclick="switchTab('hero')">🏠 Hero</div>
+    <div class="nav-item" data-tab="services" onclick="switchTab('services')">▤ Layanan & Harga</div>
+    <div class="nav-item" data-tab="process" onclick="switchTab('process')">⬡ Proses</div>
+    <div class="nav-item" data-tab="footer" onclick="switchTab('footer')">☰ Footer</div>
+    <div class="nav-item" data-tab="leads" onclick="switchTab('leads')">📋 Booking Masuk</div>
+    <div class="sidebar-footer">
+      <div style="font-size:12px;color:var(--muted-2);margin-bottom:10px;" id="user-email-label"></div>
+      <button class="logout-btn" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- HERO TAB -->
+    <div class="tab-section active" id="tab-hero">
+      <h2>Hero Section</h2>
+      <p class="desc">Bagian paling atas halaman utama.</p>
+      <div class="panel">
+        <div class="field"><label>Judul (bagian awal)</label><input id="in-hero-titlePre"></div>
+        <div class="field"><label>Judul (bagian ber-highlight)</label><input id="in-hero-titleAccent"></div>
+        <div class="field"><label>Subjudul</label><textarea id="in-hero-subtitle"></textarea></div>
+        <div class="field"><label>Label "Trusted by"</label><input id="in-hero-trustedLabel"></div>
+        <div class="field">
+          <label>Daftar Logo/Partner</label>
+          <div id="hero-logos-list"></div>
+          <button class="add-btn" onclick="addListItem('hero-logos-list','')">+ Tambah Logo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICES TAB -->
+    <div class="tab-section" id="tab-services">
+      <h2>Layanan & Harga</h2>
+      <p class="desc">Judul section dan kartu-kartu paket layanan.</p>
+      <div class="panel">
+        <div class="field"><label>Eyebrow</label><input id="in-services-eyebrow"></div>
+        <div class="field"><label>Judul (bagian awal)</label><input id="in-services-titlePre"></div>
+        <div class="field"><label>Judul (bagian ber-highlight)</label><input id="in-services-titleAccent"></div>
+        <div class="field"><label>Subjudul</label><textarea id="in-services-subtitle"></textarea></div>
+      </div>
+      <div class="panel">
+        <h3>Kartu Layanan</h3>
+        <div id="services-cards-list"></div>
+        <button class="add-btn" onclick="addServiceCard()">+ Tambah Kartu Layanan</button>
+      </div>
+    </div>
+
+    <!-- PROCESS TAB -->
+    <div class="tab-section" id="tab-process">
+      <h2>Section Proses</h2>
+      <p class="desc">Bagian "How We Work" di halaman utama.</p>
+      <div class="panel">
+        <div class="field"><label>Eyebrow</label><input id="in-process-eyebrow"></div>
+        <div class="field"><label>Judul (bagian awal)</label><input id="in-process-titlePre"></div>
+        <div class="field"><label>Judul (bagian ber-highlight)</label><input id="in-process-titleAccent"></div>
+        <div class="field"><label>Subjudul</label><textarea id="in-process-subtitle"></textarea></div>
+      </div>
+    </div>
+
+    <!-- FOOTER TAB -->
+    <div class="tab-section" id="tab-footer">
+      <h2>Footer</h2>
+      <p class="desc">Info kontak, alamat, dan tautan di footer.</p>
+      <div class="panel">
+        <div class="field"><label>Tagline</label><textarea id="in-footer-tagline"></textarea></div>
+        <div class="field"><label>Email</label><input id="in-footer-email"></div>
+        <div class="field"><label>Alamat (boleh pakai &lt;br&gt; untuk baris baru)</label><textarea id="in-footer-address"></textarea></div>
+        <div class="field"><label>Copyright</label><input id="in-footer-copyright"></div>
+      </div>
+      <div class="panel">
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:10px;">Quick Links</label>
+        <div id="footer-quicklinks-list"></div>
+        <button class="add-btn" onclick="addListItem('footer-quicklinks-list','')">+ Tambah Link</button>
+      </div>
+      <div class="panel">
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:10px;">Support Links</label>
+        <div id="footer-supportlinks-list"></div>
+        <button class="add-btn" onclick="addListItem('footer-supportlinks-list','')">+ Tambah Link</button>
+      </div>
+    </div>
+
+    <!-- LEADS TAB -->
+    <div class="tab-section" id="tab-leads">
+      <h2>Booking Masuk</h2>
+      <p class="desc">Data dari form konsultasi yang diisi calon klien.</p>
+      <div class="panel" style="padding:0;overflow-x:auto;">
+        <table>
+          <thead>
+            <tr><th>Nama</th><th>Email</th><th>Perusahaan</th><th>Layanan</th><th>Tanggal</th></tr>
+          </thead>
+          <tbody id="leads-table-body"></tbody>
+        </table>
+        <div class="empty-state" id="leads-empty" style="display:none;">Belum ada booking masuk.</div>
+      </div>
+    </div>
+
+    <div class="save-bar" id="save-bar">
+      <button class="btn-save" onclick="handleSave()" id="save-btn">Simpan Perubahan</button>
+      <span class="save-status" id="save-status"></span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let currentData = null;
+let listCounters = {};
+
+// ---- Auth gate ----
+try{
+  auth.onAuthStateChanged(function(user){
+    if(!user){
+      window.location.href = 'admin-login.html';
+    } else {
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('dashboard-layout').style.display = 'grid';
+      document.getElementById('user-email-label').textContent = user.email;
+      initDashboard();
+    }
+  });
+}catch(err){
+  document.getElementById('gate').textContent = 'Firebase belum dikonfigurasi. Isi firebase-config.js terlebih dahulu.';
+}
+
+function doLogout(){
+  auth.signOut().then(()=>{ window.location.href = 'admin-login.html'; });
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.querySelector('.nav-item[data-tab="'+tab+'"]').classList.add('active');
+  document.querySelectorAll('.tab-section').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('save-bar').style.display = (tab === 'leads') ? 'none' : 'flex';
+  if(tab === 'leads') loadLeads();
+}
+
+// ---- Init: load content into form ----
+function initDashboard(){
+  loadContent(function(data){
+    currentData = data;
+    fillForm(data);
+  });
+}
+
+function fillForm(data){
+  document.getElementById('in-hero-titlePre').value = data.hero.titlePre;
+  document.getElementById('in-hero-titleAccent').value = data.hero.titleAccent;
+  document.getElementById('in-hero-subtitle').value = data.hero.subtitle;
+  document.getElementById('in-hero-trustedLabel').value = data.hero.trustedLabel;
+  renderListItems('hero-logos-list', data.hero.logos);
+
+  document.getElementById('in-services-eyebrow').value = data.services.eyebrow;
+  document.getElementById('in-services-titlePre').value = data.services.titlePre;
+  document.getElementById('in-services-titleAccent').value = data.services.titleAccent;
+  document.getElementById('in-services-subtitle').value = data.services.subtitle;
+  renderServiceCards(data.services.cards);
+
+  document.getElementById('in-process-eyebrow').value = data.process.eyebrow;
+  document.getElementById('in-process-titlePre').value = data.process.titlePre;
+  document.getElementById('in-process-titleAccent').value = data.process.titleAccent;
+  document.getElementById('in-process-subtitle').value = data.process.subtitle;
+
+  document.getElementById('in-footer-tagline').value = data.footer.tagline;
+  document.getElementById('in-footer-email').value = data.footer.email;
+  document.getElementById('in-footer-address').value = data.footer.address;
+  document.getElementById('in-footer-copyright').value = data.footer.copyright;
+  renderListItems('footer-quicklinks-list', data.footer.quickLinks);
+  renderListItems('footer-supportlinks-list', data.footer.supportLinks);
+}
+
+// ---- Simple text list (logos, links) ----
+function renderListItems(containerId, items){
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  items.forEach(val => addListItem(containerId, val));
+}
+function addListItem(containerId, value){
+  const wrap = document.getElementById(containerId);
+  const row = document.createElement('div');
+  row.className = 'row-list-item';
+  row.innerHTML = `<input type="text" value="${escapeAttr(value)}"><button class="icon-btn" onclick="this.parentElement.remove()">✕</button>`;
+  wrap.appendChild(row);
+}
+function getListValues(containerId){
+  return Array.from(document.getElementById(containerId).querySelectorAll('input')).map(i=>i.value).filter(v=>v.trim() !== '');
+}
+
+// ---- Service cards (repeatable block) ----
+function renderServiceCards(cards){
+  const wrap = document.getElementById('services-cards-list');
+  wrap.innerHTML = '';
+  cards.forEach(c => addServiceCard(c));
+}
+function addServiceCard(card){
+  card = card || {icon:'▤', title:'', desc:'', price:'', priceUnit:'/project', features:[''], cta:'Get Started'};
+  const wrap = document.getElementById('services-cards-list');
+  const block = document.createElement('div');
+  block.className = 'card-block';
+  const featureListId = 'features-' + Math.random().toString(36).slice(2,9);
+  block.innerHTML = `
+    <button class="icon-btn remove-card" onclick="this.closest('.card-block').remove()">✕</button>
+    <div class="field"><label>Icon (emoji/simbol)</label><input class="c-icon" value="${escapeAttr(card.icon)}"></div>
+    <div class="field"><label>Nama Paket</label><input class="c-title" value="${escapeAttr(card.title)}"></div>
+    <div class="field"><label>Deskripsi</label><textarea class="c-desc">${escapeHTML(card.desc)}</textarea></div>
+    <div style="display:flex;gap:12px;">
+      <div class="field" style="flex:1;"><label>Harga</label><input class="c-price" value="${escapeAttr(card.price)}"></div>
+      <div class="field" style="flex:1;"><label>Satuan</label><input class="c-priceUnit" value="${escapeAttr(card.priceUnit)}"></div>
+    </div>
+    <div class="field">
+      <label>Daftar Fitur</label>
+      <div id="${featureListId}"></div>
+      <button class="add-btn" type="button" onclick="addListItem('${featureListId}','')">+ Tambah Fitur</button>
+    </div>
+    <div class="field"><label>Teks Tombol</label><input class="c-cta" value="${escapeAttr(card.cta)}"></div>
+  `;
+  wrap.appendChild(block);
+  renderListItems(featureListId, card.features);
+}
+function getServiceCardsData(){
+  return Array.from(document.querySelectorAll('#services-cards-list .card-block')).map(block=>{
+    const featureListEl = block.querySelector('[id^="features-"]');
+    return {
+      icon: block.querySelector('.c-icon').value,
+      title: block.querySelector('.c-title').value,
+      desc: block.querySelector('.c-desc').value,
+      price: block.querySelector('.c-price').value,
+      priceUnit: block.querySelector('.c-priceUnit').value,
+      cta: block.querySelector('.c-cta').value,
+      features: Array.from(featureListEl.querySelectorAll('input')).map(i=>i.value).filter(v=>v.trim()!=='')
+    };
+  });
+}
+
+function escapeAttr(str){ return String(str||'').replace(/"/g,'&quot;'); }
+function escapeHTML(str){ return String(str||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ---- Save ----
+function handleSave(){
+  const statusEl = document.getElementById('save-status');
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  statusEl.textContent = 'Menyimpan...';
+  statusEl.className = 'save-status';
+
+  const data = {
+    hero: {
+      titlePre: document.getElementById('in-hero-titlePre').value,
+      titleAccent: document.getElementById('in-hero-titleAccent').value,
+      subtitle: document.getElementById('in-hero-subtitle').value,
+      trustedLabel: document.getElementById('in-hero-trustedLabel').value,
+      logos: getListValues('hero-logos-list')
+    },
+    services: {
+      eyebrow: document.getElementById('in-services-eyebrow').value,
+      titlePre: document.getElementById('in-services-titlePre').value,
+      titleAccent: document.getElementById('in-services-titleAccent').value,
+      subtitle: document.getElementById('in-services-subtitle').value,
+      cards: getServiceCardsData()
+    },
+    process: {
+      eyebrow: document.getElementById('in-process-eyebrow').value,
+      titlePre: document.getElementById('in-process-titlePre').value,
+      titleAccent: document.getElementById('in-process-titleAccent').value,
+      subtitle: document.getElementById('in-process-subtitle').value
+    },
+    footer: {
+      tagline: document.getElementById('in-footer-tagline').value,
+      email: document.getElementById('in-footer-email').value,
+      address: document.getElementById('in-footer-address').value,
+      copyright: document.getElementById('in-footer-copyright').value,
+      quickLinks: getListValues('footer-quicklinks-list'),
+      supportLinks: getListValues('footer-supportlinks-list')
+    }
+  };
+
+  saveContent(data,
+    () => { statusEl.textContent = '✓ Tersimpan'; statusEl.className = 'save-status ok'; btn.disabled = false; },
+    (err) => { statusEl.textContent = 'Gagal menyimpan: ' + err.message; statusEl.className = 'save-status err'; btn.disabled = false; }
+  );
+}
+
+// ---- Leads ----
+let leadsLoaded = false;
+function loadLeads(){
+  if(leadsLoaded) return;
+  leadsLoaded = true;
+  db.collection('avenor_leads').orderBy('createdAt','desc').get()
+    .then(snap => {
+      const tbody = document.getElementById('leads-table-body');
+      const emptyEl = document.getElementById('leads-empty');
+      if(snap.empty){ emptyEl.style.display = 'block'; return; }
+      tbody.innerHTML = snap.docs.map(d => {
+        const l = d.data();
+        const date = l.createdAt ? new Date(l.createdAt).toLocaleString('id-ID') : '-';
+        return `<tr><td>${l.name||'-'}</td><td>${l.email||'-'}</td><td>${l.company||'-'}</td><td>${l.service||'-'}</td><td>${date}</td></tr>`;
+      }).join('');
+    })
+    .catch(err => {
+      document.getElementById('leads-empty').style.display = 'block';
+      document.getElementById('leads-empty').textContent = 'Gagal memuat data: ' + err.message;
+      leadsLoaded = false;
+    });
+}
+</script>
+</body>
+</html>
