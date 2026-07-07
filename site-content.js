@@ -62,7 +62,21 @@ const DEFAULT_CONTENT = {
     quickLinks: ["Home", "About Us", "Our Services", "Process", "Pricing"],
     supportLinks: ["FAQ", "Privacy Policy", "Terms of Service", "Contact Us"],
     copyright: "© 2026 Avenor. All rights reserved"
-  }
+  },
+  // Skema field form booking. Setiap field: { id, label, type, placeholder, required, step, options }
+  // type: "text" | "email" | "tel" | "textarea" | "select"
+  // step: 1 (Your Information) atau 2 (Business Details)
+  // options: dipakai kalau type === "select"
+  bookingForm: [
+    { id: "name", label: "Full Name", type: "text", placeholder: "Your full name", required: true, step: 1, options: [] },
+    { id: "email", label: "Work Email", type: "email", placeholder: "youremail@company.com", required: true, step: 1, options: [] },
+    { id: "title", label: "Job Title", type: "text", placeholder: "e.g. CEO, Founder, Product Manager", required: false, step: 1, options: [] },
+    { id: "company", label: "Company Name", type: "text", placeholder: "Your company name", required: false, step: 1, options: [] },
+    { id: "phone", label: "Phone Number", type: "tel", placeholder: "Your phone number", required: false, step: 1, options: [] },
+    { id: "stage", label: "Company Stage", type: "select", placeholder: "", required: false, step: 2, options: ["Idea / Pre-seed", "Early Stage / Seed", "Growth Stage / Series A+", "Established Business"] },
+    { id: "service", label: "What do you need help with?", type: "select", placeholder: "", required: false, step: 2, options: ["Growth Blueprint", "Scale Systems", "Not sure yet"] },
+    { id: "goals", label: "Tell us about your goals", type: "textarea", placeholder: "Share a bit about your business and what you're hoping to achieve...", required: false, step: 2, options: [] }
+  ]
 };
 
 // Ambil konten dari Firestore. Kalau belum ada / gagal, pakai DEFAULT_CONTENT.
@@ -109,6 +123,37 @@ function deepMerge(base, override) {
     }
   }
   return result;
+}
+
+function escapeAttr(str) { return String(str == null ? "" : str).replace(/&/g, "&amp;").replace(/"/g, "&quot;"); }
+function escapeHTML(str) { return String(str == null ? "" : str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+// Render field-field form booking (dipakai index.html) ke dalam 2 step berdasarkan data.bookingForm
+function renderBookingForm(data) {
+  const fields = (data && data.bookingForm) || [];
+  const renderInto = (containerId, stepNum) => {
+    const wrap = document.getElementById(containerId);
+    if (!wrap) return;
+    const stepFields = fields.filter(f => Number(f.step) === stepNum);
+    wrap.innerHTML = stepFields.map(f => bookingFieldHTML(f)).join("");
+  };
+  renderInto("step-1-fields", 1);
+  renderInto("step-2-fields", 2);
+  return fields;
+}
+
+function bookingFieldHTML(f) {
+  const elId = "f-" + f.id;
+  const req = f.required ? "required" : "";
+  const label = `<label>${escapeHTML(f.label)}</label>`;
+  if (f.type === "textarea") {
+    return `<div class="field"><label>${escapeHTML(f.label)}</label><textarea rows="4" placeholder="${escapeAttr(f.placeholder)}" id="${elId}" ${req}></textarea></div>`;
+  }
+  if (f.type === "select") {
+    const opts = (f.options || []).map(o => `<option>${escapeHTML(o)}</option>`).join("");
+    return `<div class="field"><label>${escapeHTML(f.label)}</label><select id="${elId}" ${req}><option value="">Select a${/^[aeiou]/i.test(f.label) ? "n" : ""} option</option>${opts}</select></div>`;
+  }
+  return `<div class="field"><label>${escapeHTML(f.label)}</label><input type="${escapeAttr(f.type)}" placeholder="${escapeAttr(f.placeholder)}" id="${elId}" ${req}></div>`;
 }
 
 // Render konten ke elemen-elemen di index.html
