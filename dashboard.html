@@ -89,8 +89,16 @@
 
   .card-block{border:1px solid var(--border);border-radius:12px;padding:18px 18px 16px;margin-bottom:14px;position:relative;background:#101310;}
   .card-block .remove-card{position:absolute;top:12px;right:12px;}
-  .price-row{display:flex;gap:10px;}
-  .price-row .field{flex:1;min-width:0;}
+  .price-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .price-row .field{flex:1;min-width:160px;}
+  .field select{
+    width:100%;background:#0f120e;border:1px solid #2a2f26;border-radius:10px;
+    padding:11px 14px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;
+    -webkit-appearance:none;appearance:none;
+  }
+  .field select:focus{outline:none;border-color:var(--green);}
+  .bf-required-row{display:flex;align-items:center;gap:8px;font-size:13px;color:#cfd6cd;cursor:pointer;margin-top:6px;user-select:none;}
+  .bf-required-row input{width:16px;height:16px;accent-color:var(--green);}
 
   /* ── SAVE BAR ── */
   .save-bar{
@@ -174,6 +182,7 @@
     <div class="nav-item" data-tab="services" onclick="switchTab('services')">▤ Layanan & Harga</div>
     <div class="nav-item" data-tab="process" onclick="switchTab('process')">⬡ Proses</div>
     <div class="nav-item" data-tab="footer" onclick="switchTab('footer')">☰ Footer</div>
+    <div class="nav-item" data-tab="bookingform" onclick="switchTab('bookingform')">📝 Form Booking</div>
     <div class="nav-item" data-tab="leads" onclick="switchTab('leads')">📋 Booking Masuk</div>
     <div class="sidebar-footer">
       <div class="user-label" id="user-email-label"></div>
@@ -251,6 +260,16 @@
       </div>
     </div>
 
+    <!-- BOOKING FORM -->
+    <div class="tab-section" id="tab-bookingform">
+      <h2>Form Booking Konsultasi</h2>
+      <p class="desc">Atur pertanyaan pada form booking di halaman utama — tambah, edit, hapus field, pilih tampil di step mana, dan atur wajib diisi atau tidak.</p>
+      <div class="panel">
+        <div id="bookingform-fields-list"></div>
+        <button class="add-btn" onclick="addBookingField()">+ Tambah Field</button>
+      </div>
+    </div>
+
     <!-- LEADS -->
     <div class="tab-section" id="tab-leads">
       <h2>Booking Masuk</h2>
@@ -259,7 +278,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Nama</th><th>Email</th><th>Perusahaan</th><th>Layanan</th><th>Tanggal</th></tr>
+              <tr id="leads-table-head"></tr>
             </thead>
             <tbody id="leads-table-body"></tbody>
           </table>
@@ -333,8 +352,10 @@ function switchTab(tab){
   closeSidebar();
 }
 
+let currentBookingFields=[];
+
 function initDashboard(){
-  loadContent(function(data){ fillForm(data); });
+  loadContent(function(data){ currentBookingFields=data.bookingForm||[]; fillForm(data); });
 }
 
 function fillForm(data){
@@ -359,6 +380,77 @@ function fillForm(data){
   s('in-footer-copyright',data.footer.copyright);
   renderListItems('footer-quicklinks-list',data.footer.quickLinks||[]);
   renderListItems('footer-supportlinks-list',data.footer.supportLinks||[]);
+  renderBookingFields(data.bookingForm||[]);
+}
+
+// ── Form Booking (add / edit / delete field + wajib isi) ──
+function renderBookingFields(fields){
+  const wrap=document.getElementById('bookingform-fields-list');
+  wrap.innerHTML='';
+  (fields.length?fields:[]).forEach(f=>addBookingField(f));
+}
+
+function addBookingField(field){
+  field = field || {label:'',type:'text',placeholder:'',required:false,step:1,options:[]};
+  const wrap=document.getElementById('bookingform-fields-list');
+  const block=document.createElement('div');
+  block.className='card-block bf-block';
+  const optId='bfopt-'+Math.random().toString(36).slice(2,9);
+  const typeOptions=[
+    ['text','Teks Singkat'],['email','Email'],['tel','Nomor Telepon'],
+    ['textarea','Teks Panjang'],['select','Pilihan Dropdown']
+  ].map(([v,label])=>`<option value="${v}" ${field.type===v?'selected':''}>${label}</option>`).join('');
+  block.innerHTML=`
+    <button class="icon-btn remove-card" onclick="this.closest('.bf-block').remove()">✕</button>
+    <div class="field"><label>Label Pertanyaan</label><input class="bf-label" value="${escapeAttr(field.label)}" placeholder="Contoh: Nomor WhatsApp"></div>
+    <div class="price-row">
+      <div class="field"><label>Tipe Input</label>
+        <select class="bf-type" onchange="toggleBfOptions(this)">${typeOptions}</select>
+      </div>
+      <div class="field"><label>Tampil di Step</label>
+        <select class="bf-step">
+          <option value="1" ${Number(field.step)===1?'selected':''}>Step 1 — Your Information</option>
+          <option value="2" ${Number(field.step)===2?'selected':''}>Step 2 — Business Details</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Placeholder</label><input class="bf-placeholder" value="${escapeAttr(field.placeholder)}"></div>
+    <div class="field bf-options-field" style="display:${field.type==='select'?'block':'none'}">
+      <label>Pilihan Dropdown</label>
+      <div id="${optId}"></div>
+      <button class="add-btn" type="button" onclick="addListItem('${optId}','')">+ Tambah Pilihan</button>
+    </div>
+    <label class="bf-required-row">
+      <input type="checkbox" class="bf-required" ${field.required?'checked':''}> Wajib diisi (required)
+    </label>
+  `;
+  wrap.appendChild(block);
+  renderListItems(optId, field.options||[]);
+}
+
+function toggleBfOptions(selectEl){
+  const block=selectEl.closest('.bf-block');
+  block.querySelector('.bf-options-field').style.display = (selectEl.value==='select') ? 'block' : 'none';
+}
+
+function getBookingFieldsData(){
+  const usedIds={};
+  return Array.from(document.querySelectorAll('#bookingform-fields-list .bf-block')).map((block,idx)=>{
+    const type=block.querySelector('.bf-type').value;
+    const optEl=block.querySelector('[id^="bfopt-"]');
+    const label=block.querySelector('.bf-label').value.trim();
+    let slug=label.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || ('field_'+idx);
+    if(usedIds[slug]){ usedIds[slug]++; slug=slug+'_'+usedIds[slug]; } else { usedIds[slug]=1; }
+    return{
+      id:slug,
+      label:label,
+      type:type,
+      placeholder:block.querySelector('.bf-placeholder').value,
+      required:block.querySelector('.bf-required').checked,
+      step:Number(block.querySelector('.bf-step').value),
+      options: type==='select' ? Array.from(optEl.querySelectorAll('input')).map(i=>i.value).filter(v=>v.trim()!=='') : []
+    };
+  }).filter(f=>f.label!=='');
 }
 
 function renderListItems(id,items){ const w=document.getElementById(id);w.innerHTML='';items.forEach(v=>addListItem(id,v)); }
@@ -423,7 +515,8 @@ function handleSave(){
     hero:{ titlePre:document.getElementById('in-hero-titlePre').value, titleAccent:document.getElementById('in-hero-titleAccent').value, subtitle:document.getElementById('in-hero-subtitle').value, trustedLabel:document.getElementById('in-hero-trustedLabel').value, logos:getListValues('hero-logos-list') },
     services:{ eyebrow:document.getElementById('in-services-eyebrow').value, titlePre:document.getElementById('in-services-titlePre').value, titleAccent:document.getElementById('in-services-titleAccent').value, subtitle:document.getElementById('in-services-subtitle').value, cards:getServiceCardsData() },
     process:{ eyebrow:document.getElementById('in-process-eyebrow').value, titlePre:document.getElementById('in-process-titlePre').value, titleAccent:document.getElementById('in-process-titleAccent').value, subtitle:document.getElementById('in-process-subtitle').value },
-    footer:{ tagline:document.getElementById('in-footer-tagline').value, email:document.getElementById('in-footer-email').value, address:document.getElementById('in-footer-address').value, copyright:document.getElementById('in-footer-copyright').value, quickLinks:getListValues('footer-quicklinks-list'), supportLinks:getListValues('footer-supportlinks-list') }
+    footer:{ tagline:document.getElementById('in-footer-tagline').value, email:document.getElementById('in-footer-email').value, address:document.getElementById('in-footer-address').value, copyright:document.getElementById('in-footer-copyright').value, quickLinks:getListValues('footer-quicklinks-list'), supportLinks:getListValues('footer-supportlinks-list') },
+    bookingForm: getBookingFieldsData()
   };
   saveContent(data,
     ()=>{ statusEl.textContent='✓ Tersimpan'; statusEl.className='save-status ok'; btn.disabled=false; },
@@ -434,6 +527,9 @@ function handleSave(){
 let leadsLoaded=false;
 function loadLeads(){
   if(leadsLoaded)return; leadsLoaded=true;
+  // Header kolom mengikuti field form booking yang sedang aktif
+  const headEl=document.getElementById('leads-table-head');
+  headEl.innerHTML = currentBookingFields.map(f=>`<th>${escapeHTML(f.label||f.id)}</th>`).join('') + '<th>Tanggal</th>';
   db.collection('avenor_leads').orderBy('createdAt','desc').get()
     .then(snap=>{
       const tbody=document.getElementById('leads-table-body');
@@ -442,7 +538,8 @@ function loadLeads(){
       tbody.innerHTML=snap.docs.map(d=>{
         const l=d.data();
         const date=l.createdAt?new Date(l.createdAt).toLocaleString('id-ID'):'-';
-        return`<tr><td>${l.name||'-'}</td><td>${l.email||'-'}</td><td>${l.company||'-'}</td><td>${l.service||'-'}</td><td>${date}</td></tr>`;
+        const cells=currentBookingFields.map(f=>`<td>${escapeHTML(l[f.id]||'-')}</td>`).join('');
+        return`<tr>${cells}<td>${date}</td></tr>`;
       }).join('');
     })
     .catch(err=>{ document.getElementById('leads-empty').style.display='block'; document.getElementById('leads-empty').textContent='Gagal memuat: '+err.message; leadsLoaded=false; });
