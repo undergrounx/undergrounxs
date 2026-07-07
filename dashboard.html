@@ -125,9 +125,9 @@
   /* ── OVERLAY (mobile sidebar) ── */
   .sidebar-overlay{
     display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199;
-    opacity:0;transition:opacity .25s;
+    opacity:0;transition:opacity .25s;pointer-events:none;
   }
-  .sidebar-overlay.open{opacity:1;}
+  .sidebar-overlay.open{opacity:1;pointer-events:auto;}
 
   /* ── MOBILE ── */
   @media(max-width:700px){
@@ -139,7 +139,6 @@
       background:var(--bg);height:100vh;
     }
     .sidebar.open{transform:translateX(0);}
-    .sidebar-overlay{display:block;}
     .main{padding:20px 16px 28px;}
     .main h2{font-size:20px;}
     .panel{padding:18px 16px;}
@@ -280,12 +279,27 @@
 <script>
 // ── Sidebar mobile toggle ──
 function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebar-overlay').classList.toggle('open');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const isOpen = sidebar.classList.contains('open');
+  if(isOpen){
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+    overlay.style.display = 'none';
+  } else {
+    overlay.style.display = 'block';
+    // force reflow for transition
+    overlay.offsetHeight;
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+  }
 }
 function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('open');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.remove('open');
+  overlay.classList.remove('open');
+  setTimeout(()=>{ overlay.style.display='none'; }, 260);
 }
 
 // ── Auth gate ──
