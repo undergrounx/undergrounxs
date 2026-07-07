@@ -80,7 +80,7 @@ const DEFAULT_CONTENT = {
     { id: "company", label: "Company Name", type: "text", placeholder: "Your company name", required: false, step: 1, options: [] },
     { id: "phone", label: "Phone Number", type: "tel", placeholder: "Your phone number", required: false, step: 1, options: [] },
     { id: "stage", label: "Company Stage", type: "select", placeholder: "", required: false, step: 2, options: ["Idea / Pre-seed", "Early Stage / Seed", "Growth Stage / Series A+", "Established Business"] },
-    { id: "service", label: "What do you need help with?", type: "select", placeholder: "", required: false, step: 2, options: ["Growth Blueprint", "Scale Systems", "Not sure yet"] },
+    { id: "service", label: "What do you need help with?", type: "select", placeholder: "", required: false, step: 2, options: ["Growth Blueprint", "Scale Systems", "Not sure yet"], linkedTo: "services" },
     { id: "goals", label: "Tell us about your goals", type: "textarea", placeholder: "Share a bit about your business and what you're hoping to achieve...", required: false, step: 2, options: [] }
   ]
 };
@@ -141,22 +141,34 @@ function renderBookingForm(data) {
     const wrap = document.getElementById(containerId);
     if (!wrap) return;
     const stepFields = fields.filter(f => Number(f.step) === stepNum);
-    wrap.innerHTML = stepFields.map(f => bookingFieldHTML(f)).join("");
+    wrap.innerHTML = stepFields.map(f => bookingFieldHTML(f, data)).join("");
   };
   renderInto("step-1-fields", 1);
   renderInto("step-2-fields", 2);
   return fields;
 }
 
-function bookingFieldHTML(f) {
+// Ambil daftar pilihan untuk field select. Kalau field.linkedTo === "services",
+// pilihan diambil otomatis dari nama-nama kartu di data.services.cards (tab Layanan & Harga).
+function resolveFieldOptions(f, data) {
+  if (f.linkedTo === "services") {
+    const cardTitles = (data && data.services && Array.isArray(data.services.cards))
+      ? data.services.cards.map(c => c.title).filter(Boolean)
+      : [];
+    if (cardTitles.length) return cardTitles;
+  }
+  return f.options || [];
+}
+
+function bookingFieldHTML(f, data) {
   const elId = "f-" + f.id;
   const req = f.required ? "required" : "";
-  const label = `<label>${escapeHTML(f.label)}</label>`;
   if (f.type === "textarea") {
     return `<div class="field"><label>${escapeHTML(f.label)}</label><textarea rows="4" placeholder="${escapeAttr(f.placeholder)}" id="${elId}" ${req}></textarea></div>`;
   }
   if (f.type === "select") {
-    const opts = (f.options || []).map(o => `<option>${escapeHTML(o)}</option>`).join("");
+    const optionList = resolveFieldOptions(f, data);
+    const opts = optionList.map(o => `<option>${escapeHTML(o)}</option>`).join("");
     return `<div class="field"><label>${escapeHTML(f.label)}</label><select id="${elId}" ${req}><option value="">Select a${/^[aeiou]/i.test(f.label) ? "n" : ""} option</option>${opts}</select></div>`;
   }
   return `<div class="field"><label>${escapeHTML(f.label)}</label><input type="${escapeAttr(f.type)}" placeholder="${escapeAttr(f.placeholder)}" id="${elId}" ${req}></div>`;

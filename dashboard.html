@@ -465,9 +465,15 @@ function addBookingField(field){
     </div>
     <div class="field"><label>Placeholder</label><input class="bf-placeholder" value="${escapeAttr(field.placeholder)}"></div>
     <div class="field bf-options-field" style="display:${field.type==='select'?'block':'none'}">
-      <label>Pilihan Dropdown</label>
-      <div id="${optId}"></div>
-      <button class="add-btn" type="button" onclick="addListItem('${optId}','')">+ Tambah Pilihan</button>
+      <label class="bf-required-row" style="margin-top:0;margin-bottom:10px;">
+        <input type="checkbox" class="bf-link-services" ${field.linkedTo==='services'?'checked':''} onchange="toggleBfLinkedOptions(this)"> Ambil pilihan otomatis dari kartu Layanan &amp; Harga
+      </label>
+      <div class="bf-manual-options" style="display:${field.linkedTo==='services'?'none':'block'}">
+        <label>Pilihan Dropdown</label>
+        <div id="${optId}"></div>
+        <button class="add-btn" type="button" onclick="addListItem('${optId}','')">+ Tambah Pilihan</button>
+      </div>
+      <p class="bf-linked-note" style="display:${field.linkedTo==='services'?'block':'none'};font-size:12.5px;color:var(--muted);margin:2px 0 0;">Pilihan akan otomatis mengikuti nama-nama paket di tab "Layanan &amp; Harga" — gak perlu diisi manual di sini.</p>
     </div>
     <label class="bf-required-row">
       <input type="checkbox" class="bf-required" ${field.required?'checked':''}> Wajib diisi (required)
@@ -482,6 +488,14 @@ function toggleBfOptions(selectEl){
   block.querySelector('.bf-options-field').style.display = (selectEl.value==='select') ? 'block' : 'none';
 }
 
+function toggleBfLinkedOptions(checkboxEl){
+  const optionsField=checkboxEl.closest('.bf-options-field');
+  const manual=optionsField.querySelector('.bf-manual-options');
+  const note=optionsField.querySelector('.bf-linked-note');
+  if(checkboxEl.checked){ manual.style.display='none'; note.style.display='block'; }
+  else { manual.style.display='block'; note.style.display='none'; }
+}
+
 function getBookingFieldsData(){
   const usedIds={};
   return Array.from(document.querySelectorAll('#bookingform-fields-list .bf-block')).map((block,idx)=>{
@@ -490,6 +504,8 @@ function getBookingFieldsData(){
     const label=block.querySelector('.bf-label').value.trim();
     let slug=label.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || ('field_'+idx);
     if(usedIds[slug]){ usedIds[slug]++; slug=slug+'_'+usedIds[slug]; } else { usedIds[slug]=1; }
+    const linkCheckbox=block.querySelector('.bf-link-services');
+    const linkedTo=(type==='select' && linkCheckbox && linkCheckbox.checked) ? 'services' : null;
     return{
       id:slug,
       label:label,
@@ -497,7 +513,8 @@ function getBookingFieldsData(){
       placeholder:block.querySelector('.bf-placeholder').value,
       required:block.querySelector('.bf-required').checked,
       step:Number(block.querySelector('.bf-step').value),
-      options: type==='select' ? Array.from(optEl.querySelectorAll('input')).map(i=>i.value).filter(v=>v.trim()!=='') : []
+      linkedTo:linkedTo,
+      options: (type==='select' && linkedTo!=='services') ? Array.from(optEl.querySelectorAll('input')).map(i=>i.value).filter(v=>v.trim()!=='') : []
     };
   }).filter(f=>f.label!=='');
 }
