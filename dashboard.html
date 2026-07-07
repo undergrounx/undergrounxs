@@ -267,6 +267,7 @@
       <div class="panel">
         <div id="bookingform-fields-list"></div>
         <button class="add-btn" onclick="addBookingField()">+ Tambah Field</button>
+        <button class="add-btn" style="background:#2a1f1f;color:#e0b0ae;margin-left:8px;" onclick="resetBookingFieldsToDefault()">↺ Reset ke Field Default</button>
       </div>
     </div>
 
@@ -355,7 +356,11 @@ function switchTab(tab){
 let currentBookingFields=[];
 
 function initDashboard(){
-  loadContent(function(data){ currentBookingFields=data.bookingForm||[]; fillForm(data); });
+  loadContent(function(data){
+    if(!data.bookingForm || !data.bookingForm.length) data.bookingForm = DEFAULT_CONTENT.bookingForm;
+    currentBookingFields=data.bookingForm;
+    fillForm(data);
+  });
 }
 
 function fillForm(data){
@@ -388,6 +393,11 @@ function renderBookingFields(fields){
   const wrap=document.getElementById('bookingform-fields-list');
   wrap.innerHTML='';
   (fields.length?fields:[]).forEach(f=>addBookingField(f));
+}
+
+function resetBookingFieldsToDefault(){
+  if(!confirm('Ganti semua field jadi field default (Full Name, Email, Job Title, Company, Phone, Company Stage, Service, Goals)? Field yang sedang kamu edit sekarang akan hilang sampai kamu klik Simpan Perubahan lagi.')) return;
+  renderBookingFields(JSON.parse(JSON.stringify(DEFAULT_CONTENT.bookingForm)));
 }
 
 function addBookingField(field){

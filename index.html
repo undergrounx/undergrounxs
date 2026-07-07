@@ -562,6 +562,7 @@ function validateBookingStep(stepNum){
 document.addEventListener('DOMContentLoaded', function(){
   loadContent(function(data){
     renderSite(data);
+    if(!data.bookingForm || !data.bookingForm.length) data.bookingForm = DEFAULT_CONTENT.bookingForm;
     bookingFieldsCache = renderBookingForm(data);
   });
 });
