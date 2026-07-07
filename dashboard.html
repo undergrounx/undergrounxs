@@ -124,6 +124,24 @@
   td{padding:11px 12px;border-bottom:1px solid var(--border);color:#cfd6cd;word-break:break-word;}
   tr:last-child td{border-bottom:none;}
   .empty-state{color:var(--muted);font-size:13.5px;text-align:center;padding:40px 20px;}
+  .lead-detail-btn{
+    font-size:12px;font-weight:600;color:var(--green-bright);background:var(--green-deep);
+    border:none;border-radius:8px;padding:6px 12px;cursor:pointer;white-space:nowrap;
+  }
+  .lead-modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;
+    align-items:center;justify-content:center;padding:20px;
+  }
+  .lead-modal-overlay.open{display:flex;}
+  .lead-modal{
+    background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:26px 24px;
+    max-width:480px;width:100%;max-height:82vh;overflow-y:auto;position:relative;
+  }
+  .lead-modal h3{font-size:17px;margin-bottom:18px;color:var(--green-bright);}
+  .lead-modal-close{position:absolute;top:14px;right:14px;}
+  .lead-detail-row{margin-bottom:14px;}
+  .lead-detail-row label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);margin-bottom:4px;}
+  .lead-detail-row div{font-size:14px;color:#dfe4dc;word-break:break-word;white-space:pre-wrap;line-height:1.5;}
 
   /* ── TABS ── */
   .tab-section{display:none;}
@@ -265,6 +283,12 @@
       <h2>Form Booking Konsultasi</h2>
       <p class="desc">Atur pertanyaan pada form booking di halaman utama — tambah, edit, hapus field, pilih tampil di step mana, dan atur wajib diisi atau tidak.</p>
       <div class="panel">
+        <h3>Judul Halaman Booking</h3>
+        <div class="field"><label>Judul (bagian awal)</label><input id="in-bookinghero-titlePre"></div>
+        <div class="field"><label>Judul (bagian ber-highlight)</label><input id="in-bookinghero-titleAccent"></div>
+        <div class="field"><label>Subjudul</label><textarea id="in-bookinghero-subtitle"></textarea></div>
+      </div>
+      <div class="panel">
         <div id="bookingform-fields-list"></div>
         <button class="add-btn" onclick="addBookingField()">+ Tambah Field</button>
         <button class="add-btn" style="background:#2a1f1f;color:#e0b0ae;margin-left:8px;" onclick="resetBookingFieldsToDefault()">↺ Reset ke Field Default</button>
@@ -293,6 +317,14 @@
       <span class="save-status" id="save-status"></span>
     </div>
 
+  </div>
+</div>
+
+<div class="lead-modal-overlay" id="lead-modal-overlay" onclick="closeLeadModal()">
+  <div class="lead-modal" onclick="event.stopPropagation()">
+    <button class="icon-btn lead-modal-close" onclick="closeLeadModal()">✕</button>
+    <h3 id="lead-modal-title">Detail Booking</h3>
+    <div id="lead-modal-body"></div>
   </div>
 </div>
 
@@ -379,6 +411,10 @@ function fillForm(data){
   s('in-process-titlePre',data.process.titlePre);
   s('in-process-titleAccent',data.process.titleAccent);
   s('in-process-subtitle',data.process.subtitle);
+  const bh=data.bookingHero||DEFAULT_CONTENT.bookingHero;
+  s('in-bookinghero-titlePre',bh.titlePre);
+  s('in-bookinghero-titleAccent',bh.titleAccent);
+  s('in-bookinghero-subtitle',bh.subtitle);
   s('in-footer-tagline',data.footer.tagline);
   s('in-footer-email',data.footer.email);
   s('in-footer-address',data.footer.address);
@@ -525,6 +561,7 @@ function handleSave(){
     hero:{ titlePre:document.getElementById('in-hero-titlePre').value, titleAccent:document.getElementById('in-hero-titleAccent').value, subtitle:document.getElementById('in-hero-subtitle').value, trustedLabel:document.getElementById('in-hero-trustedLabel').value, logos:getListValues('hero-logos-list') },
     services:{ eyebrow:document.getElementById('in-services-eyebrow').value, titlePre:document.getElementById('in-services-titlePre').value, titleAccent:document.getElementById('in-services-titleAccent').value, subtitle:document.getElementById('in-services-subtitle').value, cards:getServiceCardsData() },
     process:{ eyebrow:document.getElementById('in-process-eyebrow').value, titlePre:document.getElementById('in-process-titlePre').value, titleAccent:document.getElementById('in-process-titleAccent').value, subtitle:document.getElementById('in-process-subtitle').value },
+    bookingHero:{ titlePre:document.getElementById('in-bookinghero-titlePre').value, titleAccent:document.getElementById('in-bookinghero-titleAccent').value, subtitle:document.getElementById('in-bookinghero-subtitle').value },
     footer:{ tagline:document.getElementById('in-footer-tagline').value, email:document.getElementById('in-footer-email').value, address:document.getElementById('in-footer-address').value, copyright:document.getElementById('in-footer-copyright').value, quickLinks:getListValues('footer-quicklinks-list'), supportLinks:getListValues('footer-supportlinks-list') },
     bookingForm: getBookingFieldsData()
   };
@@ -535,24 +572,37 @@ function handleSave(){
 }
 
 let leadsLoaded=false;
+let leadsCache=[];
 function loadLeads(){
   if(leadsLoaded)return; leadsLoaded=true;
   // Header kolom mengikuti field form booking yang sedang aktif
   const headEl=document.getElementById('leads-table-head');
-  headEl.innerHTML = currentBookingFields.map(f=>`<th>${escapeHTML(f.label||f.id)}</th>`).join('') + '<th>Tanggal</th>';
+  headEl.innerHTML = currentBookingFields.map(f=>`<th>${escapeHTML(f.label||f.id)}</th>`).join('') + '<th>Tanggal</th><th></th>';
   db.collection('avenor_leads').orderBy('createdAt','desc').get()
     .then(snap=>{
       const tbody=document.getElementById('leads-table-body');
       const emptyEl=document.getElementById('leads-empty');
       if(snap.empty){emptyEl.style.display='block';return;}
-      tbody.innerHTML=snap.docs.map(d=>{
-        const l=d.data();
+      leadsCache = snap.docs.map(d=>d.data());
+      tbody.innerHTML=leadsCache.map((l,idx)=>{
         const date=l.createdAt?new Date(l.createdAt).toLocaleString('id-ID'):'-';
         const cells=currentBookingFields.map(f=>`<td>${escapeHTML(l[f.id]||'-')}</td>`).join('');
-        return`<tr>${cells}<td>${date}</td></tr>`;
+        return`<tr>${cells}<td>${date}</td><td><button class="lead-detail-btn" onclick="showLeadDetail(${idx})">Lihat Detail</button></td></tr>`;
       }).join('');
     })
     .catch(err=>{ document.getElementById('leads-empty').style.display='block'; document.getElementById('leads-empty').textContent='Gagal memuat: '+err.message; leadsLoaded=false; });
+}
+
+function showLeadDetail(idx){
+  const l=leadsCache[idx];
+  if(!l) return;
+  const rows=currentBookingFields.map(f=>`<div class="lead-detail-row"><label>${escapeHTML(f.label||f.id)}</label><div>${escapeHTML(l[f.id]||'-')}</div></div>`).join('');
+  const date=l.createdAt?new Date(l.createdAt).toLocaleString('id-ID'):'-';
+  document.getElementById('lead-modal-body').innerHTML = rows + `<div class="lead-detail-row"><label>Tanggal Masuk</label><div>${date}</div></div>`;
+  document.getElementById('lead-modal-overlay').classList.add('open');
+}
+function closeLeadModal(){
+  document.getElementById('lead-modal-overlay').classList.remove('open');
 }
 </script>
 </body>
