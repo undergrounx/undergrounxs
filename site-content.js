@@ -63,6 +63,12 @@ const DEFAULT_CONTENT = {
     supportLinks: ["FAQ", "Privacy Policy", "Terms of Service", "Contact Us"],
     copyright: "© 2026 Avenor. All rights reserved"
   },
+  // Judul & subjudul di halaman booking (step form konsultasi)
+  bookingHero: {
+    titlePre: "Let's Build Your Growth ",
+    titleAccent: "Strategy.",
+    subtitle: "Tell us about your business so we can understand your goals and challenges better."
+  },
   // Skema field form booking. Setiap field: { id, label, type, placeholder, required, step, options }
   // type: "text" | "email" | "tel" | "textarea" | "select"
   // step: 1 (Your Information) atau 2 (Business Details)
@@ -193,6 +199,13 @@ function renderSite(data) {
   setText("process-title-pre", data.process.titlePre);
   setText("process-title-accent", data.process.titleAccent);
   setText("process-subtitle", data.process.subtitle);
+
+  // Booking page hero
+  if (data.bookingHero) {
+    setText("booking-hero-titlePre", data.bookingHero.titlePre);
+    setText("booking-hero-titleAccent", data.bookingHero.titleAccent);
+    setText("booking-hero-subtitle", data.bookingHero.subtitle);
+  }
 
   // Footer
   setText("footer-tagline", data.footer.tagline);

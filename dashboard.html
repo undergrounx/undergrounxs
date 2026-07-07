@@ -411,10 +411,13 @@ function fillForm(data){
   s('in-process-titlePre',data.process.titlePre);
   s('in-process-titleAccent',data.process.titleAccent);
   s('in-process-subtitle',data.process.subtitle);
-  const bh=data.bookingHero||DEFAULT_CONTENT.bookingHero;
-  s('in-bookinghero-titlePre',bh.titlePre);
-  s('in-bookinghero-titleAccent',bh.titleAccent);
-  s('in-bookinghero-subtitle',bh.subtitle);
+  try{
+    const bhDefault=(typeof DEFAULT_CONTENT!=='undefined' && DEFAULT_CONTENT.bookingHero) || {titlePre:'',titleAccent:'',subtitle:''};
+    const bh=(data&&data.bookingHero)||bhDefault;
+    s('in-bookinghero-titlePre',bh.titlePre);
+    s('in-bookinghero-titleAccent',bh.titleAccent);
+    s('in-bookinghero-subtitle',bh.subtitle);
+  }catch(err){ console.warn('Gagal isi Judul Halaman Booking (kemungkinan site-content.js belum versi terbaru):',err); }
   s('in-footer-tagline',data.footer.tagline);
   s('in-footer-email',data.footer.email);
   s('in-footer-address',data.footer.address);
