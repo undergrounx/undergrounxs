@@ -1,11 +1,18 @@
 # Avenor — Website + Admin Dashboard
 
 ## Isi folder
-- `index.html` — halaman utama Avenor (landing page + form booking). Kontennya diambil dari Firestore.
-- `admin-login.html` — halaman login admin (Firebase Auth).
-- `admin-dashboard.html` — dashboard untuk edit semua teks/konten di `index.html`, plus lihat daftar booking yang masuk.
-- `firebase-config.js` — **wajib diisi** dengan config project Firebase Anda.
-- `site-content.js` — skema data & fungsi bantu (jangan diedit kecuali tahu betul).
+```
+avenor-site/
+├── index.html            ← halaman utama (landing page + form booking)
+├── firebase-config.js    ← WAJIB diisi dengan config project Firebase Anda
+├── site-content.js       ← skema data & fungsi bantu (jangan diedit kecuali tahu betul)
+├── README.md
+└── admin/
+    ├── login.html         ← halaman login admin (Firebase Auth)
+    └── dashboard.html     ← dashboard untuk edit semua konten + lihat booking masuk
+```
+
+Konten `index.html` diambil dari Firestore. File di dalam `admin/` memuat `firebase-config.js` dan `site-content.js` dari folder induk (`../firebase-config.js`), jadi struktur foldernya harus tetap seperti di atas — jangan pisahkan `admin/` ke folder/hosting yang berbeda dari file induknya.
 
 ## Cara Setup
 
@@ -42,7 +49,7 @@ service cloud.firestore {
 3. Tab **Users → Add user** → buat 1 akun admin (email + password) untuk login ke dashboard.
 
 ### 4. Hosting
-File-file ini adalah HTML statis biasa, bisa dihosting di mana saja: Firebase Hosting, Netlify, Vercel, atau server sendiri. Pastikan semua file (index.html, admin-login.html, admin-dashboard.html, firebase-config.js, site-content.js) berada dalam satu folder yang sama.
+File-file ini adalah HTML statis biasa, bisa dihosting di mana saja: Firebase Hosting, Netlify, Vercel, atau server sendiri. Upload seluruh folder `avenor-site/` apa adanya (termasuk subfolder `admin/`) — jangan pisahkan strukturnya.
 
 Contoh pakai Firebase Hosting:
 ```
@@ -54,7 +61,7 @@ firebase deploy
 
 ### 5. Akses
 - Website publik: buka `index.html`
-- Login admin: buka `admin-login.html`, masuk dengan akun yang dibuat di langkah 3
+- Login admin: buka `admin/login.html`, masuk dengan akun yang dibuat di langkah 3
 - Setelah login, edit konten di dashboard lalu klik **Simpan Perubahan** — perubahan langsung tampil di `index.html` (refresh halaman untuk melihatnya)
 
 ## Catatan
