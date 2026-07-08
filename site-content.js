@@ -108,24 +108,45 @@ const DEFAULT_CONTENT = {
   ]
 };
 
+function slugify(str) {
+  return String(str || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "halaman";
+}
+
+// Konversi footer.quickLinks/supportLinks lama (array string polos, sebelum fitur tujuan-link ada)
+// jadi format objek { label, type, target }. Kalau nama linknya cocok dengan salah satu default
+// bawaan (Home, Our Services, dst), pakai tujuan default itu. Kalau tidak, jadikan halaman baru.
+function normalizeFooterLinks(data) {
+  if (!data || !data.footer) return data;
+  const fix = (arr, defaults) => (arr || []).map(l => {
+    if (l && typeof l === "object") return l;
+    const label = String(l == null ? "" : l);
+    const match = (defaults || []).find(d => d.label.toLowerCase() === label.toLowerCase());
+    if (match) return { label, type: match.type, target: match.target };
+    return { label, type: "page", target: slugify(label) };
+  });
+  data.footer.quickLinks = fix(data.footer.quickLinks, DEFAULT_CONTENT.footer.quickLinks);
+  data.footer.supportLinks = fix(data.footer.supportLinks, DEFAULT_CONTENT.footer.supportLinks);
+  return data;
+}
+
 // Ambil konten dari Firestore. Kalau belum ada / gagal, pakai DEFAULT_CONTENT.
 function loadContent(callback) {
   try {
     db.collection(FIRESTORE_DOC_PATH.collection).doc(FIRESTORE_DOC_PATH.doc).get()
       .then((docSnap) => {
         if (docSnap.exists) {
-          callback(deepMerge(DEFAULT_CONTENT, docSnap.data()));
+          callback(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, docSnap.data())));
         } else {
-          callback(DEFAULT_CONTENT);
+          callback(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, {})));
         }
       })
       .catch((err) => {
         console.warn("Gagal ambil data Firestore, pakai default:", err);
-        callback(DEFAULT_CONTENT);
+        callback(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, {})));
       });
   } catch (err) {
     console.warn("Firebase belum dikonfigurasi, pakai default:", err);
-    callback(DEFAULT_CONTENT);
+    callback(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, {})));
   }
 }
 
