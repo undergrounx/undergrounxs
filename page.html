@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Avenor — A Consulting Partner for Startups Ready to Scale</title>
+<title>Avenor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -292,17 +292,28 @@
     .btn{padding:11px 18px;font-size:13.5px;}
   }
 </style>
+
+<style>
+  .page-wrap{max-width:760px;margin:0 auto;padding:70px 40px 110px;min-height:60vh;}
+  .page-back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13.5px;text-decoration:none;margin-bottom:28px;}
+  .page-back:hover{color:var(--green-bright);}
+  #page-title{font-family:'Manrope',sans-serif;font-weight:800;font-size:36px;letter-spacing:-0.01em;margin:0 0 24px;color:var(--text);}
+  #page-body p{color:#c7cec5;font-size:15.5px;line-height:1.8;margin:0 0 18px;}
+  #page-not-found{display:none;text-align:center;padding:60px 20px;}
+  #page-not-found h1{font-family:'Manrope',sans-serif;font-size:28px;margin:0 0 10px;color:var(--text);}
+  #page-not-found p{color:var(--muted);font-size:14.5px;margin:0 0 24px;}
+  @media(max-width:640px){.page-wrap{padding:50px 20px 80px;} #page-title{font-size:28px;}}
+</style>
 </head>
 <body>
 
-<!-- ============ HOME PAGE ============ -->
 <div id="home-page">
 
   <nav>
-    <div class="brand">
+    <a href="index.html" class="brand" style="text-decoration:none;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#e9ede7"/></svg>
       Avenor
-    </div>
+    </a>
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="page.html?slug=about-us">About Us</a></li>
@@ -310,78 +321,19 @@
       <li><a href="index.html#process">Process</a></li>
       <li><a href="index.html#services">Pricing</a></li>
     </ul>
-    <a class="btn btn-primary" onclick="goToBooking()">Book Consultation</a>
+    <a class="btn btn-primary" href="index.html">Book Consultation</a>
   </nav>
 
-  <section class="hero">
-    <div class="hero-copy">
-      <h1><span id="hero-title-pre">A Consulting Partner for Startups Ready to </span><span class="accent" id="hero-title-accent">Scale.</span></h1>
-      <p id="hero-subtitle">From strategic planning to digital transformation, we help growing companies make better decisions, move faster.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" onclick="goToBooking()">Book Consultation →</a>
-        <a class="btn btn-outline" href="#services">View Services</a>
-      </div>
-      <div class="trusted-label" id="hero-trusted-label">Trusted by innovative companies</div>
-      <div class="logo-row" id="hero-logo-row">
-        <span>◐ CloudWatch</span>
-        <span>⚡ Boltshift</span>
-        <span>▤ Epicurious</span>
-        <span>⚡ Sisyphus</span>
-        <span>✳ Nietzsche</span>
-        <span>Ⓠ Quotient</span>
-        <span>◍ Capsule</span>
-      </div>
+  <main class="page-wrap">
+    <a class="page-back" href="index.html">← Back to Home</a>
+    <h1 id="page-title">Loading…</h1>
+    <div id="page-body"></div>
+    <div id="page-not-found">
+      <h1>Halaman Tidak Ditemukan</h1>
+      <p>Maaf, halaman yang kamu cari tidak ada atau sudah dihapus.</p>
+      <a class="btn btn-primary" href="index.html">Kembali ke Beranda</a>
     </div>
-    <div class="hero-image-wrap">
-      <img src="https://images.pexels.com/photos/30684790/pexels-photo-30684790.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Portrait">
-      <div class="tag-pill tag-1"><span class="dot">+</span> Market Strategy</div>
-      <div class="tag-pill tag-2"><span class="dot">+</span> Product Positioning</div>
-      <div class="tag-pill tag-3"><span class="dot">+</span> Innovation</div>
-      <div class="tag-pill tag-4"><span class="dot">+</span> Optimize</div>
-      <div class="tag-pill tag-5"><span class="dot">+</span> Growth Analytics</div>
-    </div>
-  </section>
-
-  <section class="block" id="services">
-    <div class="section-eyebrow" id="services-eyebrow">What We Do</div>
-    <h2 class="section-title"><span id="services-title-pre">We Help Startups Scale With </span><span class="accent" id="services-title-accent">Clarity.</span></h2>
-    <p class="section-sub" id="services-subtitle">We combine strategic insight, operational expertise, and modern technology to build scalable systems that drive real growth.</p>
-
-    <div class="cards" id="services-cards">
-      <div class="card">
-        <div class="card-icon">▤</div>
-        <h3>Growth Blueprint</h3>
-        <p>For founders who feel stuck between ideas and execution. We help you define your path forward.</p>
-        <div class="price">$2,500 <span>/project</span></div>
-        <ul>
-          <li>Deep business & market breakdown</li>
-          <li>Clear growth priorities</li>
-          <li>Strategic roadmap tailored to your stage</li>
-          <li>2x private strategy sessions</li>
-        </ul>
-        <a class="btn btn-primary" onclick="goToBooking()">Get Started</a>
-      </div>
-      <div class="card">
-        <div class="card-icon">⬡</div>
-        <h3>Scale Systems</h3>
-        <p>Growth breaks messy systems. We redesign your operations, workflows, and tools.</p>
-        <div class="price">$5,000 <span>/project</span></div>
-        <ul>
-          <li>Full operations & workflow audit</li>
-          <li>Process simplification & optimization</li>
-          <li>Tooling & system recommendations</li>
-          <li>Implementation guidance with your team</li>
-        </ul>
-        <a class="btn btn-primary" onclick="goToBooking()">Get Started</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" style="padding-top:0;" id="process">
-    <div class="section-eyebrow" id="process-eyebrow">How We Work</div>
-    <h2 class="section-title"><span id="process-title-pre">A Clear Process That Drives </span><span class="accent" id="process-title-accent">Result.</span></h2>
-    <p class="section-sub" id="process-subtitle">Every engagement follows a focused path from first conversation to measurable outcomes.</p>
-  </section>
+  </main>
 
   <footer>
     <div class="footer-grid">
@@ -397,11 +349,11 @@
       </div>
       <div>
         <h4>Quick Links</h4>
-        <ul id="footer-quicklinks"><li><a href="#">Home</a></li><li><a href="#">About Us</a></li><li><a href="#">Our Services</a></li><li><a href="#">Process</a></li><li><a href="#">Pricing</a></li></ul>
+        <ul id="footer-quicklinks"></ul>
       </div>
       <div>
         <h4>Support</h4>
-        <ul id="footer-supportlinks"><li><a href="#">FAQ</a></li><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Contact Us</a></li></ul>
+        <ul id="footer-supportlinks"></ul>
       </div>
       <div>
         <h4>We'd Love to Help You With Ease</h4>
@@ -416,174 +368,13 @@
   </footer>
 </div>
 
-<!-- ============ BOOKING PAGE ============ -->
-<div class="book-page" id="book-page">
-
-  <div class="book-nav">
-    <div class="brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#e9ede7"/></svg>
-      Avenor
-    </div>
-    <a class="back-link" onclick="goHome()">← Back to Home</a>
-  </div>
-
-  <div class="book-hero">
-    <div>
-      <h1><span id="booking-hero-titlePre">Let's Build Your Growth </span><span class="accent" id="booking-hero-titleAccent">Strategy.</span></h1>
-      <p id="booking-hero-subtitle">Tell us about your business so we can understand your goals and challenges better.</p>
-    </div>
-    <div class="book-photo">
-      <img src="https://images.pexels.com/photos/30684790/pexels-photo-30684790.jpeg?auto=compress&cs=tinysrgb&w=1200&h=750&fit=crop" alt="">
-    </div>
-  </div>
-
-  <div class="stepper-card">
-    <div class="steps-row">
-      <div class="step-item active" id="step-item-1">
-        <div class="step-circle">1</div>
-        <div class="step-label">Your Information</div>
-        <div class="step-line"></div>
-      </div>
-      <div class="step-item" id="step-item-2">
-        <div class="step-circle">2</div>
-        <div class="step-label">Business Details</div>
-        <div class="step-line"></div>
-      </div>
-      <div class="step-item" id="step-item-3">
-        <div class="step-circle">3</div>
-        <div class="step-label">Confirmation</div>
-        <div class="step-line"></div>
-      </div>
-    </div>
-
-    <!-- STEP 1 -->
-    <div id="step-1">
-      <h3 class="form-title">Your Information</h3>
-      <p class="form-sub">Let's start with the basics.</p>
-      <div class="form-grid" id="step-1-fields"></div>
-      <div class="form-actions">
-        <button class="btn btn-primary" onclick="nextStep(1)">Next Step →</button>
-      </div>
-    </div>
-
-    <!-- STEP 2 -->
-    <div id="step-2" style="display:none;">
-      <h3 class="form-title">Business Details</h3>
-      <p class="form-sub">Help us understand where you are today.</p>
-      <div class="form-grid" id="step-2-fields"></div>
-      <div class="form-actions">
-        <button class="btn btn-outline" onclick="prevStep(2)">← Back</button>
-        <button class="btn btn-primary" onclick="handleSubmitStep2()">Next Step →</button>
-      </div>
-    </div>
-
-    <!-- STEP 3 -->
-    <div id="step-3" style="display:none;">
-      <div class="confirm-box">
-        <div class="check">✓</div>
-        <h2>You're All Set!</h2>
-        <p>Thanks for reaching out. Our team will review your information and get back to you within 24 hours to schedule your consultation.</p>
-      </div>
-      <div class="form-actions" style="justify-content:center;">
-        <button class="btn btn-outline" onclick="goHome()">Back to Home</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="trust-row">
-    <div class="trust-item"><div class="trust-icon">🛡</div><div><b>100% Confidential</b><span>Your data is safe with us</span></div></div>
-    <div class="trust-item"><div class="trust-icon">✉</div><div><b>No Spam Promise</b><span>We hate spam as much as you do</span></div></div>
-    <div class="trust-item"><div class="trust-icon">⚡</div><div><b>Quick Response</b><span>We'll get back to you within 24h</span></div></div>
-  </div>
-</div>
-
 <script>
-function goToBooking(){
-  document.getElementById('home-page').style.display = 'none';
-  document.getElementById('book-page').style.display = 'block';
-  window.scrollTo(0,0);
-}
-function goHome(){
-  document.getElementById('book-page').style.display = 'none';
-  document.getElementById('home-page').style.display = 'block';
-  resetForm();
-  window.scrollTo(0,0);
-}
-function setStep(n){
-  for(let i=1;i<=3;i++){
-    document.getElementById('step-'+i).style.display = (i===n) ? 'block' : 'none';
-    const item = document.getElementById('step-item-'+i);
-    item.classList.remove('active','done');
-    if(i < n) item.classList.add('done');
-    if(i === n) item.classList.add('active');
-  }
-}
-function nextStep(current){
-  if(current === 1 && !validateBookingStep(1)) return;
-  setStep(current+1);
-}
-function prevStep(current){
-  setStep(current-1);
-}
-let bookingFieldsCache = [];
-
-function resetForm(){
-  setStep(1);
-  bookingFieldsCache.forEach(f=>{
-    const el = document.getElementById('f-'+f.id);
-    if(!el) return;
-    if(f.type === 'select') el.selectedIndex = 0; else el.value = '';
-    el.classList.remove('field-error');
-  });
-}
-
-// Cek field wajib isi (required) pada step tertentu. Kalau ada yang kosong, kasih highlight merah.
-function validateBookingStep(stepNum){
-  let ok = true;
-  let firstInvalid = null;
-  bookingFieldsCache.filter(f => Number(f.step) === stepNum).forEach(f=>{
-    const el = document.getElementById('f-'+f.id);
-    if(!el) return;
-    const val = (el.value || '').trim();
-    if(f.required && !val){
-      ok = false;
-      el.classList.add('field-error');
-      if(!firstInvalid) firstInvalid = el;
-    } else {
-      el.classList.remove('field-error');
-    }
-  });
-  if(!ok && firstInvalid){ firstInvalid.focus(); firstInvalid.scrollIntoView({behavior:'smooth', block:'center'}); }
-  return ok;
-}
-
-// Muat konten dari Firestore (fallback ke default kalau belum dikonfigurasi)
 document.addEventListener('DOMContentLoaded', function(){
   loadContent(function(data){
     renderSite(data);
-    if(!data.bookingForm || !data.bookingForm.length) data.bookingForm = DEFAULT_CONTENT.bookingForm;
-    bookingFieldsCache = renderBookingForm(data);
+    renderPageContent(data);
   });
 });
-
-function handleSubmitStep2(){
-  if(!validateBookingStep(2)) return;
-  submitBookingLead();
-  nextStep(2);
-}
-
-// Kirim data form booking ke Firestore (koleksi terpisah: avenor_leads), field-nya dinamis sesuai bookingFieldsCache
-function submitBookingLead(){
-  const lead = {};
-  bookingFieldsCache.forEach(f=>{
-    const el = document.getElementById('f-'+f.id);
-    if(el) lead[f.id] = el.value;
-  });
-  lead.createdAt = new Date().toISOString();
-  try{
-    db.collection('avenor_leads').add(lead).catch(err=>console.warn('Gagal simpan lead:', err));
-  }catch(err){ console.warn('Firebase belum dikonfigurasi:', err); }
-}
 </script>
 
 </body>

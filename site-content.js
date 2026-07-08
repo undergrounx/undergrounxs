@@ -59,9 +59,32 @@ const DEFAULT_CONTENT = {
     tagline: "We help startups and growing businesses make better decisions, move faster.",
     email: "hello@avenor.com",
     address: "8502 Preston Rd, Inglewood,<br>Maine 98380",
-    quickLinks: ["Home", "About Us", "Our Services", "Process", "Pricing"],
-    supportLinks: ["FAQ", "Privacy Policy", "Terms of Service", "Contact Us"],
+    // Setiap link: { label, type, target }
+    // type "section" -> target = id section di index.html ("top" utk paling atas)
+    // type "page"    -> target = slug halaman (isi konten diatur di tab Halaman)
+    // type "url"     -> target = alamat link luar
+    quickLinks: [
+      { label: "Home", type: "section", target: "top" },
+      { label: "About Us", type: "page", target: "about-us" },
+      { label: "Our Services", type: "section", target: "services" },
+      { label: "Process", type: "section", target: "process" },
+      { label: "Pricing", type: "section", target: "services" }
+    ],
+    supportLinks: [
+      { label: "FAQ", type: "page", target: "faq" },
+      { label: "Privacy Policy", type: "page", target: "privacy-policy" },
+      { label: "Terms of Service", type: "page", target: "terms-of-service" },
+      { label: "Contact Us", type: "page", target: "contact-us" }
+    ],
     copyright: "© 2026 Avenor. All rights reserved"
+  },
+  // Konten halaman-halaman terpisah (dibuka lewat page.html?slug=...), dikelola di tab "Halaman"
+  pages: {
+    "about-us": { title: "About Us", body: "Tulis konten halaman About Us di sini lewat tab Halaman di dashboard." },
+    "faq": { title: "FAQ", body: "Tulis pertanyaan yang sering diajukan di sini lewat tab Halaman di dashboard." },
+    "privacy-policy": { title: "Privacy Policy", body: "Tulis kebijakan privasi di sini lewat tab Halaman di dashboard." },
+    "terms-of-service": { title: "Terms of Service", body: "Tulis syarat & ketentuan layanan di sini lewat tab Halaman di dashboard." },
+    "contact-us": { title: "Contact Us", body: "Tulis informasi kontak di sini lewat tab Halaman di dashboard." }
   },
   // Judul & subjudul di halaman booking (step form konsultasi)
   bookingHero: {
@@ -116,18 +139,23 @@ function saveContent(data, onSuccess, onError) {
 
 // Merge sederhana supaya field yang belum ada di Firestore tetap terisi default.
 function deepMerge(base, override) {
-  const result = Array.isArray(base) ? [] : {};
-  for (const key in base) {
-    if (override && override[key] !== undefined) {
-      if (typeof base[key] === "object" && base[key] !== null && !Array.isArray(base[key])) {
-        result[key] = deepMerge(base[key], override[key]);
-      } else {
-        result[key] = override[key];
-      }
-    } else {
-      result[key] = base[key];
-    }
+  if (Array.isArray(base)) {
+    return (override !== undefined && override !== null) ? override : base;
   }
+  const result = {};
+  const keys = new Set([...Object.keys(base || {}), ...Object.keys(override || {})]);
+  keys.forEach((key) => {
+    const baseVal = base ? base[key] : undefined;
+    const overrideVal = override ? override[key] : undefined;
+    if (overrideVal === undefined) {
+      result[key] = baseVal;
+    } else if (baseVal && typeof baseVal === "object" && !Array.isArray(baseVal) &&
+               overrideVal && typeof overrideVal === "object" && !Array.isArray(overrideVal)) {
+      result[key] = deepMerge(baseVal, overrideVal);
+    } else {
+      result[key] = overrideVal;
+    }
+  });
   return result;
 }
 
@@ -172,6 +200,47 @@ function bookingFieldHTML(f, data) {
     return `<div class="field"><label>${escapeHTML(f.label)}</label><select id="${elId}" ${req}><option value="">Select a${/^[aeiou]/i.test(f.label) ? "n" : ""} option</option>${opts}</select></div>`;
   }
   return `<div class="field"><label>${escapeHTML(f.label)}</label><input type="${escapeAttr(f.type)}" placeholder="${escapeAttr(f.placeholder)}" id="${elId}" ${req}></div>`;
+}
+
+// Bikin href yang benar dari objek link footer, tergantung tipenya
+function resolveLinkHref(link) {
+  if (!link) return "#";
+  if (typeof link === "string") return "#"; // data lama (format string) tanpa tujuan, aman di-skip
+  if (link.type === "url") {
+    const t = (link.target || "").trim();
+    if (!t) return "#";
+    return /^https?:\/\//i.test(t) ? t : ("https://" + t);
+  }
+  if (link.type === "page") {
+    return "page.html?slug=" + encodeURIComponent(link.target || "");
+  }
+  // type "section" (default)
+  return (link.target && link.target !== "top") ? ("index.html#" + link.target) : "index.html";
+}
+
+// Render konten halaman generik (dipakai page.html) berdasarkan ?slug= di URL
+function renderPageContent(data) {
+  const slug = new URLSearchParams(window.location.search).get("slug") || "";
+  const page = (data.pages && data.pages[slug]) || null;
+  const titleEl = document.getElementById("page-title");
+  const bodyEl = document.getElementById("page-body");
+  const notFoundEl = document.getElementById("page-not-found");
+  if (!page) {
+    if (titleEl) titleEl.style.display = "none";
+    if (bodyEl) bodyEl.style.display = "none";
+    if (notFoundEl) notFoundEl.style.display = "block";
+    document.title = "Halaman Tidak Ditemukan — Avenor";
+    return;
+  }
+  if (titleEl) { titleEl.textContent = page.title || ""; titleEl.style.display = ""; }
+  if (bodyEl) {
+    bodyEl.style.display = "";
+    bodyEl.innerHTML = String(page.body || "").split(/\n{2,}/).map(
+      para => `<p>${escapeHTML(para).replace(/\n/g, "<br>")}</p>`
+    ).join("");
+  }
+  if (notFoundEl) notFoundEl.style.display = "none";
+  document.title = (page.title || "Halaman") + " — Avenor";
 }
 
 // Render konten ke elemen-elemen di index.html
@@ -225,7 +294,13 @@ function renderSite(data) {
   setHTML("footer-address", data.footer.address);
   setText("footer-copyright", data.footer.copyright);
   const quickLinksEl = document.getElementById("footer-quicklinks");
-  if (quickLinksEl) quickLinksEl.innerHTML = data.footer.quickLinks.map(l => `<li><a href="#">${l}</a></li>`).join("");
+  if (quickLinksEl) quickLinksEl.innerHTML = (data.footer.quickLinks || []).map(l => {
+    const label = typeof l === "string" ? l : l.label;
+    return `<li><a href="${escapeAttr(resolveLinkHref(l))}">${escapeHTML(label)}</a></li>`;
+  }).join("");
   const supportLinksEl = document.getElementById("footer-supportlinks");
-  if (supportLinksEl) supportLinksEl.innerHTML = data.footer.supportLinks.map(l => `<li><a href="#">${l}</a></li>`).join("");
+  if (supportLinksEl) supportLinksEl.innerHTML = (data.footer.supportLinks || []).map(l => {
+    const label = typeof l === "string" ? l : l.label;
+    return `<li><a href="${escapeAttr(resolveLinkHref(l))}">${escapeHTML(label)}</a></li>`;
+  }).join("");
 }

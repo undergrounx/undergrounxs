@@ -99,6 +99,13 @@
   .field select:focus{outline:none;border-color:var(--green);}
   .bf-required-row{display:flex;align-items:center;gap:8px;font-size:13px;color:#cfd6cd;cursor:pointer;margin-top:6px;user-select:none;}
   .bf-required-row input{width:16px;height:16px;accent-color:var(--green);}
+  .fl-hint{font-size:12.5px;color:var(--muted);margin:0 0 12px;}
+  .fl-block .field{margin-bottom:10px;}
+  .fl-page-note{font-size:12.5px;color:var(--muted);margin:0 0 6px;line-height:1.5;}
+  .page-block{border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;position:relative;background:#101310;}
+  .page-block .remove-card{position:absolute;top:12px;right:12px;}
+  .page-slug-tag{display:inline-block;font-size:11.5px;color:var(--green-bright);background:var(--green-deep);border-radius:6px;padding:3px 9px;margin-bottom:12px;font-family:monospace;}
+  .page-block a.page-view-link{font-size:12.5px;color:var(--green-bright);text-decoration:underline;margin-left:8px;}
 
   /* ── SAVE BAR ── */
   .save-bar{
@@ -200,6 +207,7 @@
     <div class="nav-item" data-tab="services" onclick="switchTab('services')">▤ Layanan & Harga</div>
     <div class="nav-item" data-tab="process" onclick="switchTab('process')">⬡ Proses</div>
     <div class="nav-item" data-tab="footer" onclick="switchTab('footer')">☰ Footer</div>
+    <div class="nav-item" data-tab="pages" onclick="switchTab('pages')">📄 Halaman</div>
     <div class="nav-item" data-tab="bookingform" onclick="switchTab('bookingform')">📝 Form Booking</div>
     <div class="nav-item" data-tab="leads" onclick="switchTab('leads')">📋 Booking Masuk</div>
     <div class="sidebar-footer">
@@ -267,14 +275,26 @@
         <div class="field"><label>Copyright</label><input id="in-footer-copyright"></div>
       </div>
       <div class="panel">
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:10px;color:#cfd6cd;">Quick Links</label>
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:#cfd6cd;">Quick Links</label>
+        <p class="fl-hint">Tiap link bisa menuju section di halaman utama, halaman baru (otomatis dibuat), atau URL luar.</p>
         <div id="footer-quicklinks-list"></div>
-        <button class="add-btn" onclick="addListItem('footer-quicklinks-list','')">+ Tambah Link</button>
+        <button class="add-btn" onclick="addFooterLink('footer-quicklinks-list')">+ Tambah Link</button>
       </div>
       <div class="panel">
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:10px;color:#cfd6cd;">Support Links</label>
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:#cfd6cd;">Support Links</label>
+        <p class="fl-hint">Tiap link bisa menuju section di halaman utama, halaman baru (otomatis dibuat), atau URL luar.</p>
         <div id="footer-supportlinks-list"></div>
-        <button class="add-btn" onclick="addListItem('footer-supportlinks-list','')">+ Tambah Link</button>
+        <button class="add-btn" onclick="addFooterLink('footer-supportlinks-list')">+ Tambah Link</button>
+      </div>
+    </div>
+
+    <!-- PAGES -->
+    <div class="tab-section" id="tab-pages">
+      <h2>Halaman</h2>
+      <p class="desc">Isi konten untuk halaman-halaman yang dibuat lewat link di Footer (tipe "Halaman Baru"). Halaman baru otomatis muncul di sini setelah kamu Simpan Perubahan.</p>
+      <div class="panel">
+        <div id="pages-list"></div>
+        <div class="empty-state" id="pages-empty" style="display:none;">Belum ada halaman. Tambah link dengan tipe "Halaman Baru" di tab Footer, lalu Simpan Perubahan.</div>
       </div>
     </div>
 
@@ -422,8 +442,9 @@ function fillForm(data){
   s('in-footer-email',data.footer.email);
   s('in-footer-address',data.footer.address);
   s('in-footer-copyright',data.footer.copyright);
-  renderListItems('footer-quicklinks-list',data.footer.quickLinks||[]);
-  renderListItems('footer-supportlinks-list',data.footer.supportLinks||[]);
+  renderFooterLinks('footer-quicklinks-list',data.footer.quickLinks||[]);
+  renderFooterLinks('footer-supportlinks-list',data.footer.supportLinks||[]);
+  renderPagesEditor(data.pages||{});
   renderBookingFields(data.bookingForm||[]);
 }
 
@@ -481,6 +502,121 @@ function addBookingField(field){
   `;
   wrap.appendChild(block);
   renderListItems(optId, field.options||[]);
+}
+
+// ── Footer Links (section / halaman baru / URL luar) ──
+function slugify(str){
+  return String(str||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'halaman';
+}
+
+function footerLinkBlockHTML(link){
+  link = link || {label:'',type:'page',target:''};
+  const type = link.type || 'page';
+  return `
+    <div class="card-block fl-block">
+      <button class="icon-btn remove-card" onclick="this.closest('.fl-block').remove()">✕</button>
+      <div class="field"><label>Nama Link</label><input class="fl-label" value="${escapeAttr(link.label)}" placeholder="Contoh: Karir"></div>
+      <div class="field"><label>Tujuan Link</label>
+        <select class="fl-type" onchange="toggleFlTarget(this)">
+          <option value="section" ${type==='section'?'selected':''}>Section di Halaman Utama</option>
+          <option value="page" ${type==='page'?'selected':''}>Halaman Baru (otomatis dibuat)</option>
+          <option value="url" ${type==='url'?'selected':''}>Link Luar (URL)</option>
+        </select>
+      </div>
+      <div class="field fl-target-section" style="display:${type==='section'?'block':'none'};margin-bottom:0;">
+        <label>Menuju ke</label>
+        <select class="fl-target-select">
+          <option value="top" ${link.target==='top'?'selected':''}>Paling Atas (Home)</option>
+          <option value="services" ${link.target==='services'?'selected':''}>Layanan &amp; Harga</option>
+          <option value="process" ${link.target==='process'?'selected':''}>Proses Kerja</option>
+        </select>
+      </div>
+      <div class="fl-target-page" style="display:${type==='page'?'block':'none'};">
+        <p class="fl-page-note">Halaman ini otomatis dibuat saat Simpan Perubahan. Isi kontennya nanti di tab <b>📄 Halaman</b>.</p>
+        <input type="hidden" class="fl-page-slug" value="${escapeAttr(type==='page'?(link.target||''):'')}">
+      </div>
+      <div class="field fl-target-url" style="display:${type==='url'?'block':'none'};margin-bottom:0;">
+        <label>URL Tujuan</label>
+        <input class="fl-target-url-input" value="${escapeAttr(type==='url'?(link.target||''):'')}" placeholder="https://...">
+      </div>
+    </div>`;
+}
+
+function toggleFlTarget(selectEl){
+  const block=selectEl.closest('.fl-block');
+  const type=selectEl.value;
+  block.querySelector('.fl-target-section').style.display = type==='section' ? 'block':'none';
+  block.querySelector('.fl-target-page').style.display = type==='page' ? 'block':'none';
+  block.querySelector('.fl-target-url').style.display = type==='url' ? 'block':'none';
+}
+
+function renderFooterLinks(containerId, links){
+  const wrap=document.getElementById(containerId);
+  wrap.innerHTML='';
+  (links||[]).forEach(l=>{
+    const norm = (typeof l === 'string') ? {label:l,type:'page',target:''} : l; // jaga-jaga data lama format string
+    wrap.insertAdjacentHTML('beforeend', footerLinkBlockHTML(norm));
+  });
+}
+
+function addFooterLink(containerId){
+  document.getElementById(containerId).insertAdjacentHTML('beforeend', footerLinkBlockHTML({label:'',type:'page',target:''}));
+}
+
+function getFooterLinksData(containerId){
+  const used={};
+  return Array.from(document.querySelectorAll('#'+containerId+' .fl-block')).map(block=>{
+    const label=block.querySelector('.fl-label').value.trim();
+    const type=block.querySelector('.fl-type').value;
+    let target='';
+    if(type==='section'){
+      target=block.querySelector('.fl-target-select').value;
+    } else if(type==='url'){
+      target=block.querySelector('.fl-target-url-input').value.trim();
+    } else {
+      let slug=block.querySelector('.fl-page-slug').value || slugify(label);
+      if(used[slug]){ used[slug]++; slug=slug+'-'+used[slug]; } else { used[slug]=1; }
+      target=slug;
+    }
+    return { label, type, target };
+  }).filter(l=>l.label!=='');
+}
+
+// ── Halaman (konten page.html?slug=...) ──
+function pageBlockHTML(slug, page){
+  page = page || {title:'',body:''};
+  return `
+    <div class="page-block" data-slug="${escapeAttr(slug)}">
+      <button class="icon-btn remove-card" onclick="this.closest('.page-block').remove()">✕</button>
+      <span class="page-slug-tag">/page.html?slug=${escapeAttr(slug)}</span>
+      <a class="page-view-link" href="page.html?slug=${escapeAttr(slug)}" target="_blank" rel="noopener">Lihat ↗</a>
+      <div class="field" style="margin-top:12px;"><label>Judul Halaman</label><input class="pg-title" value="${escapeAttr(page.title)}"></div>
+      <div class="field" style="margin-bottom:0;"><label>Isi Konten</label><textarea class="pg-body" rows="6">${escapeHTML(page.body||'')}</textarea></div>
+    </div>`;
+}
+
+function renderPagesEditor(pagesObj){
+  const wrap=document.getElementById('pages-list');
+  const emptyEl=document.getElementById('pages-empty');
+  wrap.innerHTML='';
+  const slugs=Object.keys(pagesObj||{});
+  emptyEl.style.display = slugs.length ? 'none' : 'block';
+  slugs.forEach(slug=>{
+    wrap.insertAdjacentHTML('beforeend', pageBlockHTML(slug, pagesObj[slug]));
+  });
+}
+
+function getPagesData(){
+  const result={};
+  document.querySelectorAll('#pages-list .page-block').forEach(block=>{
+    const slug=block.getAttribute('data-slug');
+    if(!slug) return;
+    result[slug]={
+      title: block.querySelector('.pg-title').value,
+      body: block.querySelector('.pg-body').value
+    };
+  });
+  return result;
 }
 
 function toggleBfOptions(selectEl){
@@ -577,16 +713,30 @@ function handleSave(){
   const statusEl=document.getElementById('save-status');
   const btn=document.getElementById('save-btn');
   btn.disabled=true; statusEl.textContent='Menyimpan...'; statusEl.className='save-status';
+  const quickLinks=getFooterLinksData('footer-quicklinks-list');
+  const supportLinks=getFooterLinksData('footer-supportlinks-list');
+  const pages=getPagesData();
+  // Halaman baru dari link bertipe "page" yang belum punya kontennya, otomatis dibuatkan draft
+  [...quickLinks, ...supportLinks].forEach(l=>{
+    if(l.type==='page' && l.target && !pages[l.target]){
+      pages[l.target] = { title: l.label || l.target, body: 'Tulis konten halaman ini di sini.' };
+    }
+  });
   const data={
     hero:{ titlePre:document.getElementById('in-hero-titlePre').value, titleAccent:document.getElementById('in-hero-titleAccent').value, subtitle:document.getElementById('in-hero-subtitle').value, trustedLabel:document.getElementById('in-hero-trustedLabel').value, logos:getListValues('hero-logos-list') },
     services:{ eyebrow:document.getElementById('in-services-eyebrow').value, titlePre:document.getElementById('in-services-titlePre').value, titleAccent:document.getElementById('in-services-titleAccent').value, subtitle:document.getElementById('in-services-subtitle').value, cards:getServiceCardsData() },
     process:{ eyebrow:document.getElementById('in-process-eyebrow').value, titlePre:document.getElementById('in-process-titlePre').value, titleAccent:document.getElementById('in-process-titleAccent').value, subtitle:document.getElementById('in-process-subtitle').value },
     bookingHero:{ titlePre:document.getElementById('in-bookinghero-titlePre').value, titleAccent:document.getElementById('in-bookinghero-titleAccent').value, subtitle:document.getElementById('in-bookinghero-subtitle').value },
-    footer:{ tagline:document.getElementById('in-footer-tagline').value, email:document.getElementById('in-footer-email').value, address:document.getElementById('in-footer-address').value, copyright:document.getElementById('in-footer-copyright').value, quickLinks:getListValues('footer-quicklinks-list'), supportLinks:getListValues('footer-supportlinks-list') },
+    footer:{ tagline:document.getElementById('in-footer-tagline').value, email:document.getElementById('in-footer-email').value, address:document.getElementById('in-footer-address').value, copyright:document.getElementById('in-footer-copyright').value, quickLinks:quickLinks, supportLinks:supportLinks },
+    pages: pages,
     bookingForm: getBookingFieldsData()
   };
   saveContent(data,
-    ()=>{ statusEl.textContent='✓ Tersimpan'; statusEl.className='save-status ok'; btn.disabled=false; },
+    ()=>{
+      statusEl.textContent='✓ Tersimpan'; statusEl.className='save-status ok'; btn.disabled=false;
+      currentBookingFields = data.bookingForm;
+      renderPagesEditor(data.pages); // biar halaman baru yg baru dibuat langsung kelihatan
+    },
     (err)=>{ statusEl.textContent='Gagal: '+err.message; statusEl.className='save-status err'; btn.disabled=false; }
   );
 }
