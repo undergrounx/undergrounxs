@@ -302,6 +302,20 @@
   #page-not-found{display:none;text-align:center;padding:60px 20px;}
   #page-not-found h1{font-family:'Manrope',sans-serif;font-size:28px;margin:0 0 10px;color:var(--text);}
   #page-not-found p{color:var(--muted);font-size:14.5px;margin:0 0 24px;}
+  .page-faq{margin:0 0 18px;}
+  .faq-item{border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px;background:var(--panel);}
+  .faq-item summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;}
+  .faq-item summary::-webkit-details-marker{display:none;}
+  .faq-item summary::after{content:'+';color:var(--green-bright);font-size:18px;margin-left:12px;flex-shrink:0;}
+  .faq-item[open] summary::after{content:'−';}
+  .faq-answer{color:#c7cec5;font-size:14.5px;line-height:1.7;margin-top:12px;}
+  .faq-answer p{margin:0 0 10px;}
+  .page-contact{margin:0 0 18px;}
+  .contact-row{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);font-size:14.5px;}
+  .contact-row:last-child{border-bottom:none;}
+  .contact-label{color:var(--muted);min-width:110px;flex-shrink:0;}
+  .contact-value{color:var(--text);}
+  .contact-value a{color:var(--green-bright);text-decoration:underline;}
   @media(max-width:640px){.page-wrap{padding:50px 20px 80px;} #page-title{font-size:28px;}}
 </style>
 </head>

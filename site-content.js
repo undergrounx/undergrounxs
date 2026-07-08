@@ -79,12 +79,32 @@ const DEFAULT_CONTENT = {
     copyright: "© 2026 Avenor. All rights reserved"
   },
   // Konten halaman-halaman terpisah (dibuka lewat page.html?slug=...), dikelola di tab "Halaman"
+  // Tiap halaman punya "blocks": array blok konten dengan tipe berbeda-beda:
+  // { type:"text", content }  |  { type:"faq", items:[{q,a}] }
+  // { type:"contact", items:[{label,value}] } (value email/nomor otomatis jadi link mailto/tel)
   pages: {
-    "about-us": { title: "About Us", body: "Tulis konten halaman About Us di sini lewat tab Halaman di dashboard." },
-    "faq": { title: "FAQ", body: "Tulis pertanyaan yang sering diajukan di sini lewat tab Halaman di dashboard." },
-    "privacy-policy": { title: "Privacy Policy", body: "Tulis kebijakan privasi di sini lewat tab Halaman di dashboard." },
-    "terms-of-service": { title: "Terms of Service", body: "Tulis syarat & ketentuan layanan di sini lewat tab Halaman di dashboard." },
-    "contact-us": { title: "Contact Us", body: "Tulis informasi kontak di sini lewat tab Halaman di dashboard." }
+    "about-us": { title: "About Us", blocks: [
+      { type: "text", content: "Tulis konten halaman About Us di sini lewat tab Halaman di dashboard." }
+    ]},
+    "faq": { title: "FAQ", blocks: [
+      { type: "faq", items: [
+        { q: "Bagaimana cara memulai konsultasi dengan Avenor?", a: "Klik tombol \"Book Consultation\" di halaman utama, isi form singkatnya, dan tim kami akan menghubungi kamu." },
+        { q: "Berapa lama proses konsultasinya?", a: "Tergantung paket yang dipilih, biasanya berkisar 2–6 minggu." }
+      ]}
+    ]},
+    "privacy-policy": { title: "Privacy Policy", blocks: [
+      { type: "text", content: "Tulis kebijakan privasi di sini lewat tab Halaman di dashboard." }
+    ]},
+    "terms-of-service": { title: "Terms of Service", blocks: [
+      { type: "text", content: "Tulis syarat & ketentuan layanan di sini lewat tab Halaman di dashboard." }
+    ]},
+    "contact-us": { title: "Contact Us", blocks: [
+      { type: "contact", items: [
+        { label: "Email", value: "hello@avenor.com" },
+        { label: "Phone", value: "+1 (555) 123-4567" },
+        { label: "Address", value: "8502 Preston Rd, Inglewood, Maine 98380" }
+      ]}
+    ]}
   },
   // Judul & subjudul di halaman booking (step form konsultasi)
   bookingHero: {
@@ -129,24 +149,39 @@ function normalizeFooterLinks(data) {
   return data;
 }
 
+// Migrasi otomatis: kalau ada halaman dari versi lama (format "body" teks polos),
+// ubah jadi 1 blok teks supaya tetap kompatibel dengan editor blok yang baru.
+function normalizePages(data) {
+  if (!data || !data.pages) return data;
+  Object.keys(data.pages).forEach((slug) => {
+    const p = data.pages[slug];
+    if (!p) return;
+    if (!Array.isArray(p.blocks)) {
+      p.blocks = (typeof p.body === "string" && p.body.trim()) ? [{ type: "text", content: p.body }] : [];
+    }
+    delete p.body;
+  });
+  return data;
+}
+
 // Ambil konten dari Firestore. Kalau belum ada / gagal, pakai DEFAULT_CONTENT.
 function loadContent(callback) {
   try {
     db.collection(FIRESTORE_DOC_PATH.collection).doc(FIRESTORE_DOC_PATH.doc).get()
       .then((docSnap) => {
         if (docSnap.exists) {
-          callback(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, docSnap.data())));
+          callback(normalizePages(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, docSnap.data()))));
         } else {
-          callback(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, {})));
+          callback(normalizePages(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, {}))));
         }
       })
       .catch((err) => {
         console.warn("Gagal ambil data Firestore, pakai default:", err);
-        callback(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, {})));
+        callback(normalizePages(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, {}))));
       });
   } catch (err) {
     console.warn("Firebase belum dikonfigurasi, pakai default:", err);
-    callback(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, {})));
+    callback(normalizePages(normalizeFooterLinks(deepMerge(DEFAULT_CONTENT, {}))));
   }
 }
 
@@ -239,6 +274,45 @@ function resolveLinkHref(link) {
   return (link.target && link.target !== "top") ? ("index.html#" + link.target) : "index.html";
 }
 
+// Bikin href otomatis buat item info kontak (email -> mailto:, telepon -> tel:, url -> apa adanya)
+function contactItemHref(item) {
+  const v = String((item && item.value) || "").trim();
+  if (!v) return null;
+  const label = String((item && item.label) || "").toLowerCase();
+  if (/^https?:\/\//i.test(v)) return v;
+  if (label.includes("email") || label.includes("surel") || /@/.test(v)) return "mailto:" + v;
+  if (label.includes("phone") || label.includes("telp") || label.includes("whatsapp") || label.includes("wa") || /^[+0-9 ()-]{6,}$/.test(v)) {
+    return "tel:" + v.replace(/[^0-9+]/g, "");
+  }
+  return null;
+}
+
+function textToParagraphs(text) {
+  return String(text || "").split(/\n{2,}/).map(
+    para => `<p>${escapeHTML(para).replace(/\n/g, "<br>")}</p>`
+  ).join("");
+}
+
+function renderPageBlocks(blocks) {
+  return (blocks || []).map(b => {
+    if (b.type === "faq") {
+      return `<div class="page-faq">${(b.items || []).map(item => `
+        <details class="faq-item">
+          <summary>${escapeHTML(item.q || "")}</summary>
+          <div class="faq-answer">${textToParagraphs(item.a || "")}</div>
+        </details>`).join("")}</div>`;
+    }
+    if (b.type === "contact") {
+      return `<div class="page-contact">${(b.items || []).map(item => {
+        const href = contactItemHref(item);
+        const valueHtml = href ? `<a href="${escapeAttr(href)}">${escapeHTML(item.value || "")}</a>` : escapeHTML(item.value || "");
+        return `<div class="contact-row"><span class="contact-label">${escapeHTML(item.label || "")}</span><span class="contact-value">${valueHtml}</span></div>`;
+      }).join("")}</div>`;
+    }
+    return textToParagraphs(b.content || "");
+  }).join("");
+}
+
 // Render konten halaman generik (dipakai page.html) berdasarkan ?slug= di URL
 function renderPageContent(data) {
   const slug = new URLSearchParams(window.location.search).get("slug") || "";
@@ -254,12 +328,7 @@ function renderPageContent(data) {
     return;
   }
   if (titleEl) { titleEl.textContent = page.title || ""; titleEl.style.display = ""; }
-  if (bodyEl) {
-    bodyEl.style.display = "";
-    bodyEl.innerHTML = String(page.body || "").split(/\n{2,}/).map(
-      para => `<p>${escapeHTML(para).replace(/\n/g, "<br>")}</p>`
-    ).join("");
-  }
+  if (bodyEl) { bodyEl.style.display = ""; bodyEl.innerHTML = renderPageBlocks(page.blocks || []); }
   if (notFoundEl) notFoundEl.style.display = "none";
   document.title = (page.title || "Halaman") + " — Avenor";
 }

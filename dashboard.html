@@ -106,6 +106,27 @@
   .page-block .remove-card{position:absolute;top:12px;right:12px;}
   .page-slug-tag{display:inline-block;font-size:11.5px;color:var(--green-bright);background:var(--green-deep);border-radius:6px;padding:3px 9px;margin-bottom:12px;font-family:monospace;}
   .page-block a.page-view-link{font-size:12.5px;color:var(--green-bright);text-decoration:underline;margin-left:8px;}
+  .pgblocks-wrap{margin-top:6px;}
+  .pgblock{border:1px solid #232821;border-radius:10px;padding:14px;margin-bottom:10px;background:#0e110d;}
+  .pgblock-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .pgblock-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--green-bright);background:var(--green-deep);border-radius:6px;padding:3px 8px;}
+  .pgblock textarea.pgb-text{width:100%;min-height:90px;background:#0f120e;border:1px solid #2a2f26;border-radius:8px;padding:10px 12px;color:var(--text);font-size:13.5px;font-family:'Inter',sans-serif;resize:vertical;}
+  .pgblock textarea.pgb-text:focus{outline:none;border-color:var(--green);}
+  .pgb-faq-item,.pgb-contact-item{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed #232821;}
+  .pgb-faq-item:last-child,.pgb-contact-item:last-child{border-bottom:none;}
+  .pgb-faq-item{flex-direction:column;}
+  .pgb-faq-item .pgb-faq-row{display:flex;gap:8px;width:100%;}
+  .pgb-faq-q,.pgb-faq-a,.pgb-contact-label,.pgb-contact-value{
+    background:#0f120e;border:1px solid #2a2f26;border-radius:8px;padding:9px 11px;color:var(--text);
+    font-size:13px;font-family:'Inter',sans-serif;
+  }
+  .pgb-faq-q:focus,.pgb-faq-a:focus,.pgb-contact-label:focus,.pgb-contact-value:focus{outline:none;border-color:var(--green);}
+  .pgb-faq-q{width:100%;font-weight:600;}
+  .pgb-faq-a{width:100%;margin-top:6px;resize:vertical;min-height:50px;}
+  .pgb-contact-label{width:130px;flex-shrink:0;}
+  .pgb-contact-value{flex:1;}
+  .pgblock-add-row{display:flex;gap:8px;margin-top:4px;}
+  .pgblock-type-select{background:#0f120e;border:1px solid #2a2f26;border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;}
 
   /* ── SAVE BAR ── */
   .save-bar{
@@ -582,16 +603,74 @@ function getFooterLinksData(containerId){
   }).filter(l=>l.label!=='');
 }
 
-// ── Halaman (konten page.html?slug=...) ──
+// ── Halaman (konten page.html?slug=...) — berbasis blok: text / faq / contact ──
+function faqItemHTML(item){
+  item = item || {q:'',a:''};
+  return `<div class="pgb-faq-item">
+    <div class="pgb-faq-row">
+      <input class="pgb-faq-q" value="${escapeAttr(item.q||'')}" placeholder="Pertanyaan">
+      <button class="icon-btn" type="button" onclick="this.closest('.pgb-faq-item').remove()">✕</button>
+    </div>
+    <textarea class="pgb-faq-a" placeholder="Jawaban">${escapeHTML(item.a||'')}</textarea>
+  </div>`;
+}
+function contactItemHTML(item){
+  item = item || {label:'',value:''};
+  return `<div class="pgb-contact-item">
+    <input class="pgb-contact-label" value="${escapeAttr(item.label||'')}" placeholder="Label (Email/Phone/Address)">
+    <input class="pgb-contact-value" value="${escapeAttr(item.value||'')}" placeholder="Isi, contoh: hello@avenor.com">
+    <button class="icon-btn" type="button" onclick="this.closest('.pgb-contact-item').remove()">✕</button>
+  </div>`;
+}
+
+function pgBlockHTML(block){
+  block = block || {type:'text', content:''};
+  if(block.type==='faq'){
+    return `<div class="pgblock" data-type="faq">
+      <div class="pgblock-head"><span class="pgblock-tag">FAQ — Tanya Jawab</span><button class="icon-btn" type="button" onclick="this.closest('.pgblock').remove()">✕</button></div>
+      <div class="pgb-faq-items">${(block.items||[]).map(faqItemHTML).join('')}</div>
+      <button class="add-btn" type="button" onclick="this.previousElementSibling.insertAdjacentHTML('beforeend', faqItemHTML())">+ Tambah Pertanyaan</button>
+    </div>`;
+  }
+  if(block.type==='contact'){
+    return `<div class="pgblock" data-type="contact">
+      <div class="pgblock-head"><span class="pgblock-tag">Info Kontak</span><button class="icon-btn" type="button" onclick="this.closest('.pgblock').remove()">✕</button></div>
+      <div class="pgb-contact-items">${(block.items||[]).map(contactItemHTML).join('')}</div>
+      <button class="add-btn" type="button" onclick="this.previousElementSibling.insertAdjacentHTML('beforeend', contactItemHTML())">+ Tambah Info</button>
+    </div>`;
+  }
+  return `<div class="pgblock" data-type="text">
+    <div class="pgblock-head"><span class="pgblock-tag">Teks</span><button class="icon-btn" type="button" onclick="this.closest('.pgblock').remove()">✕</button></div>
+    <textarea class="pgb-text" placeholder="Tulis paragraf di sini...">${escapeHTML(block.content||'')}</textarea>
+  </div>`;
+}
+
+function addPageBlock(btnEl){
+  const row=btnEl.closest('.pgblock-add-row');
+  const type=row.querySelector('.pgblock-type-select').value;
+  const wrap=row.previousElementSibling; // .pgblocks-wrap
+  const defaults = type==='faq' ? {type:'faq',items:[{q:'',a:''}]} : type==='contact' ? {type:'contact',items:[{label:'',value:''}]} : {type:'text',content:''};
+  wrap.insertAdjacentHTML('beforeend', pgBlockHTML(defaults));
+}
+
 function pageBlockHTML(slug, page){
-  page = page || {title:'',body:''};
+  page = page || {title:'',blocks:[]};
   return `
     <div class="page-block" data-slug="${escapeAttr(slug)}">
       <button class="icon-btn remove-card" onclick="this.closest('.page-block').remove()">✕</button>
       <span class="page-slug-tag">/page.html?slug=${escapeAttr(slug)}</span>
       <a class="page-view-link" href="page.html?slug=${escapeAttr(slug)}" target="_blank" rel="noopener">Lihat ↗</a>
       <div class="field" style="margin-top:12px;"><label>Judul Halaman</label><input class="pg-title" value="${escapeAttr(page.title)}"></div>
-      <div class="field" style="margin-bottom:0;"><label>Isi Konten</label><textarea class="pg-body" rows="6">${escapeHTML(page.body||'')}</textarea></div>
+      <label style="display:block;font-size:13px;font-weight:600;margin-bottom:7px;color:#cfd6cd;">Isi Konten</label>
+      <div class="pgblocks-wrap">${(page.blocks||[]).map(pgBlockHTML).join('')}</div>
+      <div class="pgblock-add-row">
+        <select class="pgblock-type-select">
+          <option value="text">Teks</option>
+          <option value="faq">FAQ (Tanya Jawab)</option>
+          <option value="contact">Info Kontak</option>
+        </select>
+        <button class="add-btn" type="button" onclick="addPageBlock(this)">+ Tambah Blok</button>
+      </div>
     </div>`;
 }
 
@@ -606,14 +685,34 @@ function renderPagesEditor(pagesObj){
   });
 }
 
+function readPgBlock(blockEl){
+  const type=blockEl.getAttribute('data-type');
+  if(type==='faq'){
+    const items=Array.from(blockEl.querySelectorAll('.pgb-faq-item')).map(it=>({
+      q: it.querySelector('.pgb-faq-q').value,
+      a: it.querySelector('.pgb-faq-a').value
+    })).filter(it=>it.q.trim()!=='' || it.a.trim()!=='');
+    return { type:'faq', items };
+  }
+  if(type==='contact'){
+    const items=Array.from(blockEl.querySelectorAll('.pgb-contact-item')).map(it=>({
+      label: it.querySelector('.pgb-contact-label').value,
+      value: it.querySelector('.pgb-contact-value').value
+    })).filter(it=>it.label.trim()!=='' || it.value.trim()!=='');
+    return { type:'contact', items };
+  }
+  return { type:'text', content: blockEl.querySelector('.pgb-text').value };
+}
+
 function getPagesData(){
   const result={};
-  document.querySelectorAll('#pages-list .page-block').forEach(block=>{
-    const slug=block.getAttribute('data-slug');
+  document.querySelectorAll('#pages-list .page-block').forEach(pageEl=>{
+    const slug=pageEl.getAttribute('data-slug');
     if(!slug) return;
+    const blocks=Array.from(pageEl.querySelectorAll('.pgblocks-wrap > .pgblock')).map(readPgBlock);
     result[slug]={
-      title: block.querySelector('.pg-title').value,
-      body: block.querySelector('.pg-body').value
+      title: pageEl.querySelector('.pg-title').value,
+      blocks: blocks
     };
   });
   return result;
@@ -719,7 +818,7 @@ function handleSave(){
   // Halaman baru dari link bertipe "page" yang belum punya kontennya, otomatis dibuatkan draft
   [...quickLinks, ...supportLinks].forEach(l=>{
     if(l.type==='page' && l.target && !pages[l.target]){
-      pages[l.target] = { title: l.label || l.target, body: 'Tulis konten halaman ini di sini.' };
+      pages[l.target] = { title: l.label || l.target, blocks: [{ type:'text', content:'Tulis konten halaman ini di sini.' }] };
     }
   });
   const data={
