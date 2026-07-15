@@ -6,6 +6,21 @@
 const FIRESTORE_DOC_PATH = { collection: "avenor_content", doc: "site" };
 
 const DEFAULT_CONTENT = {
+  // Warna website. Key di sini dipetakan ke CSS variable yang sama namanya di index.html/page.html
+  // (mis. "greenBright" -> --green-bright). Diedit lewat tab "Warna" di dashboard.
+  theme: {
+    bg: "#0b0d0c",
+    panel: "#141713",
+    panel2: "#171b16",
+    border: "#262b25",
+    text: "#f2f3ef",
+    muted: "#9aa39a",
+    muted2: "#6f766e",
+    green: "#7ea583",
+    greenBright: "#a9d3ad",
+    greenDeep: "#2c3a2d",
+    pillBg: "#1b211b"
+  },
   hero: {
     titlePre: "A Consulting Partner for Startups Ready to ",
     titleAccent: "Scale.",
@@ -127,6 +142,23 @@ const DEFAULT_CONTENT = {
     { id: "goals", label: "Tell us about your goals", type: "textarea", placeholder: "Share a bit about your business and what you're hoping to achieve...", required: false, step: 2, options: [] }
   ]
 };
+
+// Peta key di data.theme -> nama CSS variable di :root (index.html, page.html, admin/dashboard.html)
+const THEME_VAR_MAP = {
+  bg: "--bg", panel: "--panel", panel2: "--panel-2", border: "--border",
+  text: "--text", muted: "--muted", muted2: "--muted-2",
+  green: "--green", greenBright: "--green-bright", greenDeep: "--green-deep", pillBg: "--pill-bg"
+};
+
+// Terapkan warna dari data.theme ke halaman (menimpa nilai default di <style>:root).
+// Dipanggil setelah loadContent() di index.html & page.html.
+function applyTheme(theme) {
+  const t = Object.assign({}, DEFAULT_CONTENT.theme, theme || {});
+  const root = document.documentElement.style;
+  Object.keys(THEME_VAR_MAP).forEach((key) => {
+    if (t[key]) root.setProperty(THEME_VAR_MAP[key], t[key]);
+  });
+}
 
 function slugify(str) {
   return String(str || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "halaman";

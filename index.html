@@ -560,6 +560,7 @@ function validateBookingStep(stepNum){
 // Muat konten dari Firestore (fallback ke default kalau belum dikonfigurasi)
 document.addEventListener('DOMContentLoaded', function(){
   loadContent(function(data){
+    applyTheme(data.theme);
     renderSite(data);
     if(!data.bookingForm || !data.bookingForm.length) data.bookingForm = DEFAULT_CONTENT.bookingForm;
     bookingFieldsCache = renderBookingForm(data);

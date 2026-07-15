@@ -171,6 +171,52 @@
   .lead-detail-row label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);margin-bottom:4px;}
   .lead-detail-row div{font-size:14px;color:#dfe4dc;word-break:break-word;white-space:pre-wrap;line-height:1.5;}
 
+  /* ── THEME / WARNA ── */
+  .theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+  .color-field label{display:block;font-size:13px;font-weight:600;margin-bottom:7px;color:#cfd6cd;}
+  .color-row{display:flex;gap:8px;align-items:center;}
+  .color-row input[type="color"]{
+    width:44px;height:40px;flex-shrink:0;border-radius:8px;border:1px solid #2a2f26;background:#0f120e;
+    padding:2px;cursor:pointer;
+  }
+  .color-row input[type="text"]{
+    flex:1;min-width:0;background:#0f120e;border:1px solid #2a2f26;border-radius:10px;
+    padding:11px 14px;color:var(--text);font-size:13.5px;font-family:monospace;
+  }
+  .color-row input[type="text"]:focus{outline:none;border-color:var(--green);}
+  .theme-actions{display:flex;justify-content:flex-end;margin-bottom:14px;}
+  .btn-reset-theme{
+    font-size:12.5px;font-weight:600;color:var(--muted);background:transparent;border:1px solid #33362f;
+    border-radius:8px;padding:8px 14px;cursor:pointer;
+  }
+  .btn-reset-theme:hover{color:var(--text);border-color:#575d51;}
+  .theme-preview-wrap{position:sticky;top:0;}
+  .theme-preview{
+    border-radius:16px;padding:24px;transition:background .15s,color .15s;
+    background:var(--tp-bg);color:var(--tp-text);border:1px solid var(--tp-border);
+  }
+  .theme-preview .tp-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tp-green-bright);margin-bottom:8px;}
+  .theme-preview h4{font-family:'Manrope',sans-serif;font-size:19px;margin-bottom:8px;}
+  .theme-preview h4 span{color:var(--tp-green-bright);}
+  .theme-preview p{font-size:13.5px;color:var(--tp-muted);line-height:1.6;margin-bottom:16px;}
+  .theme-preview .tp-card{
+    background:var(--tp-panel);border:1px solid var(--tp-border);border-radius:12px;padding:16px;margin-bottom:14px;
+  }
+  .theme-preview .tp-card .tp-badge{
+    display:inline-block;font-size:11px;font-weight:700;background:var(--tp-green-deep);color:var(--tp-green-bright);
+    border-radius:999px;padding:3px 10px;margin-bottom:10px;
+  }
+  .theme-preview .tp-card p{color:var(--tp-muted-2);margin-bottom:0;font-size:12.5px;}
+  .theme-preview .tp-btn{
+    display:inline-block;padding:10px 20px;border-radius:999px;font-weight:700;font-size:13px;
+    background:var(--tp-green);color:var(--tp-bg);margin-right:8px;
+  }
+  .theme-preview .tp-btn-outline{
+    display:inline-block;padding:9px 19px;border-radius:999px;font-weight:700;font-size:13px;
+    background:transparent;color:var(--tp-text);border:1px solid var(--tp-panel-2);
+  }
+  @media(max-width:900px){ .theme-preview-wrap{position:static;margin-top:18px;} }
+
   /* ── TABS ── */
   .tab-section{display:none;}
   .tab-section.active{display:block;}
@@ -227,6 +273,7 @@
     <div class="nav-item active" data-tab="hero" onclick="switchTab('hero')">🏠 Hero</div>
     <div class="nav-item" data-tab="services" onclick="switchTab('services')">▤ Layanan & Harga</div>
     <div class="nav-item" data-tab="process" onclick="switchTab('process')">⬡ Proses</div>
+    <div class="nav-item" data-tab="theme" onclick="switchTab('theme')">🎨 Warna</div>
     <div class="nav-item" data-tab="footer" onclick="switchTab('footer')">☰ Footer</div>
     <div class="nav-item" data-tab="pages" onclick="switchTab('pages')">📄 Halaman</div>
     <div class="nav-item" data-tab="bookingform" onclick="switchTab('bookingform')">📝 Form Booking</div>
@@ -282,6 +329,77 @@
         <div class="field"><label>Judul (bagian awal)</label><input id="in-process-titlePre"></div>
         <div class="field"><label>Judul (ber-highlight)</label><input id="in-process-titleAccent"></div>
         <div class="field"><label>Subjudul</label><textarea id="in-process-subtitle"></textarea></div>
+      </div>
+    </div>
+
+    <!-- THEME / WARNA -->
+    <div class="tab-section" id="tab-theme">
+      <h2>Warna Website</h2>
+      <p class="desc">Ubah palet warna seluruh website (halaman utama, halaman lain, dan form booking). Perubahan langsung terlihat di preview kanan, klik <b>Simpan Perubahan</b> untuk menerapkannya ke website publik.</p>
+      <div class="theme-actions">
+        <button class="btn-reset-theme" type="button" onclick="resetThemeToDefault()">↺ Reset ke Warna Default</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start;">
+        <div class="panel">
+          <h3>Warna Utama</h3>
+          <div class="theme-grid">
+            <div class="field color-field"><label>Aksen Utama (tombol, ikon)</label>
+              <div class="color-row"><input type="color" id="in-theme-green-picker"><input type="text" id="in-theme-green" placeholder="#7ea583"></div>
+            </div>
+            <div class="field color-field"><label>Aksen Terang (highlight teks)</label>
+              <div class="color-row"><input type="color" id="in-theme-greenBright-picker"><input type="text" id="in-theme-greenBright" placeholder="#a9d3ad"></div>
+            </div>
+            <div class="field color-field"><label>Aksen Gelap (background ikon/badge)</label>
+              <div class="color-row"><input type="color" id="in-theme-greenDeep-picker"><input type="text" id="in-theme-greenDeep" placeholder="#2c3a2d"></div>
+            </div>
+          </div>
+          <h3 style="margin-top:22px;">Latar Belakang</h3>
+          <div class="theme-grid">
+            <div class="field color-field"><label>Latar Utama Halaman</label>
+              <div class="color-row"><input type="color" id="in-theme-bg-picker"><input type="text" id="in-theme-bg" placeholder="#0b0d0c"></div>
+            </div>
+            <div class="field color-field"><label>Latar Panel/Kartu</label>
+              <div class="color-row"><input type="color" id="in-theme-panel-picker"><input type="text" id="in-theme-panel" placeholder="#141713"></div>
+            </div>
+            <div class="field color-field"><label>Latar Panel Sekunder</label>
+              <div class="color-row"><input type="color" id="in-theme-panel2-picker"><input type="text" id="in-theme-panel2" placeholder="#171b16"></div>
+            </div>
+            <div class="field color-field"><label>Latar Badge/Pill</label>
+              <div class="color-row"><input type="color" id="in-theme-pillBg-picker"><input type="text" id="in-theme-pillBg" placeholder="#1b211b"></div>
+            </div>
+            <div class="field color-field"><label>Garis Tepi (Border)</label>
+              <div class="color-row"><input type="color" id="in-theme-border-picker"><input type="text" id="in-theme-border" placeholder="#262b25"></div>
+            </div>
+          </div>
+          <h3 style="margin-top:22px;">Teks</h3>
+          <div class="theme-grid">
+            <div class="field color-field"><label>Teks Utama</label>
+              <div class="color-row"><input type="color" id="in-theme-text-picker"><input type="text" id="in-theme-text" placeholder="#f2f3ef"></div>
+            </div>
+            <div class="field color-field"><label>Teks Redup</label>
+              <div class="color-row"><input type="color" id="in-theme-muted-picker"><input type="text" id="in-theme-muted" placeholder="#9aa39a"></div>
+            </div>
+            <div class="field color-field"><label>Teks Redup 2 (lebih samar)</label>
+              <div class="color-row"><input type="color" id="in-theme-muted2-picker"><input type="text" id="in-theme-muted2" placeholder="#6f766e"></div>
+            </div>
+          </div>
+        </div>
+        <div class="theme-preview-wrap">
+          <div class="panel" style="padding:14px;">
+            <h3 style="margin-bottom:12px;">Preview</h3>
+            <div class="theme-preview" id="theme-preview">
+              <div class="tp-eyebrow">What We Do</div>
+              <h4>Scale With <span>Clarity.</span></h4>
+              <p>Contoh tampilan teks dan warna sesuai pilihan kamu.</p>
+              <div class="tp-card">
+                <span class="tp-badge">Growth Blueprint</span>
+                <p>Deskripsi singkat layanan tampil dengan warna teks redup di sini.</p>
+              </div>
+              <a class="tp-btn">Get Started</a>
+              <a class="tp-btn-outline">Book a Call</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -467,6 +585,7 @@ function fillForm(data){
   renderFooterLinks('footer-supportlinks-list',data.footer.supportLinks||[]);
   renderPagesEditor(data.pages||{});
   renderBookingFields(data.bookingForm||[]);
+  fillThemeForm(data.theme);
 }
 
 // ── Form Booking (add / edit / delete field + wajib isi) ──
@@ -805,6 +924,69 @@ function getServiceCardsData(){
   });
 }
 
+// ── Warna Website ──
+const THEME_KEYS = ['bg','panel','panel2','border','text','muted','muted2','green','greenBright','greenDeep','pillBg'];
+const HEX_RE = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+function fillThemeForm(theme){
+  const t = Object.assign({}, DEFAULT_CONTENT.theme, theme || {});
+  THEME_KEYS.forEach(key=>{
+    const txt = document.getElementById('in-theme-'+key);
+    const picker = document.getElementById('in-theme-'+key+'-picker');
+    if(txt) txt.value = t[key];
+    if(picker) picker.value = normalizeHexForPicker(t[key]);
+  });
+  updateThemePreview();
+}
+
+function normalizeHexForPicker(hex){
+  if(!HEX_RE.test(hex)) return '#000000';
+  if(hex.length===4){ // #abc -> #aabbcc
+    return '#'+hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];
+  }
+  return hex;
+}
+
+function getThemeData(){
+  const data = {};
+  THEME_KEYS.forEach(key=>{
+    const txt = document.getElementById('in-theme-'+key);
+    const val = (txt && txt.value.trim()) || DEFAULT_CONTENT.theme[key];
+    data[key] = HEX_RE.test(val) ? val : DEFAULT_CONTENT.theme[key];
+  });
+  return data;
+}
+
+function updateThemePreview(){
+  const t = getThemeData();
+  const preview = document.getElementById('theme-preview');
+  if(!preview) return;
+  const map = {
+    bg:'--tp-bg', panel:'--tp-panel', panel2:'--tp-panel-2', border:'--tp-border',
+    text:'--tp-text', muted:'--tp-muted', muted2:'--tp-muted-2',
+    green:'--tp-green', greenBright:'--tp-green-bright', greenDeep:'--tp-green-deep', pillBg:'--tp-pill-bg'
+  };
+  THEME_KEYS.forEach(key=>{ preview.style.setProperty(map[key], t[key]); });
+}
+
+function resetThemeToDefault(){
+  if(!confirm('Kembalikan semua warna ke default? Ini belum tersimpan sampai kamu klik Simpan Perubahan.')) return;
+  fillThemeForm(DEFAULT_CONTENT.theme);
+}
+
+function initThemeInputs(){
+  THEME_KEYS.forEach(key=>{
+    const txt = document.getElementById('in-theme-'+key);
+    const picker = document.getElementById('in-theme-'+key+'-picker');
+    if(picker) picker.addEventListener('input', ()=>{ txt.value = picker.value; updateThemePreview(); });
+    if(txt) txt.addEventListener('input', ()=>{
+      if(HEX_RE.test(txt.value.trim())) picker.value = normalizeHexForPicker(txt.value.trim());
+      updateThemePreview();
+    });
+  });
+}
+initThemeInputs();
+
 function escapeAttr(str){ return String(str||'').replace(/"/g,'&quot;'); }
 function escapeHTML(str){ return String(str||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -828,7 +1010,8 @@ function handleSave(){
     bookingHero:{ titlePre:document.getElementById('in-bookinghero-titlePre').value, titleAccent:document.getElementById('in-bookinghero-titleAccent').value, subtitle:document.getElementById('in-bookinghero-subtitle').value },
     footer:{ tagline:document.getElementById('in-footer-tagline').value, email:document.getElementById('in-footer-email').value, address:document.getElementById('in-footer-address').value, copyright:document.getElementById('in-footer-copyright').value, quickLinks:quickLinks, supportLinks:supportLinks },
     pages: pages,
-    bookingForm: getBookingFieldsData()
+    bookingForm: getBookingFieldsData(),
+    theme: getThemeData()
   };
   saveContent(data,
     ()=>{

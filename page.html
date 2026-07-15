@@ -385,6 +385,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function(){
   loadContent(function(data){
+    applyTheme(data.theme);
     renderSite(data);
     renderPageContent(data);
   });
