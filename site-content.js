@@ -149,15 +149,36 @@ const THEME_VAR_MAP = {
   text: "--text", muted: "--muted", muted2: "--muted-2",
   green: "--green", greenBright: "--green-bright", greenDeep: "--green-deep", pillBg: "--pill-bg"
 };
+const THEME_CACHE_KEY = "avenor_theme_cache_v1";
 
-// Terapkan warna dari data.theme ke halaman (menimpa nilai default di <style>:root).
-// Dipanggil setelah loadContent() di index.html & page.html.
-function applyTheme(theme) {
+// Set CSS variable warna ke elemen <html> (inline style, jadi selalu menang dibanding :root di <style>).
+function applyThemeVars(theme) {
   const t = Object.assign({}, DEFAULT_CONTENT.theme, theme || {});
   const root = document.documentElement.style;
   Object.keys(THEME_VAR_MAP).forEach((key) => {
     if (t[key]) root.setProperty(THEME_VAR_MAP[key], t[key]);
   });
+}
+
+// Terapkan warna yang tersimpan di cache browser (localStorage), SEBELUM data asli dari Firestore
+// selesai dimuat. Ini mencegah halaman "kedip" balik ke warna default tiap kali di-refresh.
+// Dipanggil sesegera mungkin di <head>, sebelum <style> dan sebelum body dirender.
+function applyCachedTheme() {
+  try {
+    const cached = localStorage.getItem(THEME_CACHE_KEY);
+    if (cached) applyThemeVars(JSON.parse(cached));
+  } catch (err) {
+    // localStorage tidak tersedia (mis. mode privat) — abaikan, nanti tetap kepasang lewat Firestore.
+  }
+}
+
+// Terapkan warna dari data.theme ke halaman (menimpa nilai default di <style>:root), lalu simpan
+// ke cache supaya kunjungan/refresh berikutnya langsung tampil warna yang benar tanpa kedip.
+// Dipanggil setelah loadContent() di index.html & page.html.
+function applyTheme(theme) {
+  const t = Object.assign({}, DEFAULT_CONTENT.theme, theme || {});
+  applyThemeVars(t);
+  try { localStorage.setItem(THEME_CACHE_KEY, JSON.stringify(t)); } catch (err) { /* abaikan */ }
 }
 
 function slugify(str) {
