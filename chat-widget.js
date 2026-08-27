@@ -19,7 +19,7 @@
 // (collection "avenor_chats"). Melihat & mengunduh riwayat semua percakapan
 // hanya bisa dilakukan admin yang login, lewat tab "Percakapan" di dashboard.
 // ================================================
-const WEBHOOK_URL_CHAT = "https://n8n-8wasd160acfj.jkt5.sumopod.my.id/webhook/personal-assistant";
+const WEBHOOK_URL_CHAT = "https://n8n-8wasd160acfj.jkt5.sumopod.my.id/webhook/tanya-aja";
 // ================================================
 
 (function () {
