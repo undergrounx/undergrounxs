@@ -6,164 +6,157 @@
 const FIRESTORE_DOC_PATH = { collection: "avenor_content", doc: "site" };
 
 const DEFAULT_CONTENT = {
-  // Warna website. Key di sini dipetakan ke CSS variable yang sama namanya di index.html/page.html
-  // (mis. "greenBright" -> --green-bright). Diedit lewat tab "Warna" di dashboard.
   theme: {
-    bg: "#0b0d0c",
-    panel: "#141713",
-    panel2: "#171b16",
-    border: "#262b25",
-    text: "#f2f3ef",
-    muted: "#9aa39a",
-    muted2: "#6f766e",
-    green: "#7ea583",
-    greenBright: "#a9d3ad",
-    greenDeep: "#2c3a2d",
-    pillBg: "#1b211b"
+    bg: "#eeeeee",
+    panel: "#ffffff",
+    panel2: "#ffffff",
+    border: "#e0e0e0",
+    text: "#222222",
+    muted: "#555555",
+    muted2: "#777777",
+    green: "#222222",
+    greenBright: "#222222",
+    greenDeep: "#333333",
+    pillBg: "#e5e5e5"
   },
   hero: {
-    image: "https://images.pexels.com/photos/30684790/pexels-photo-30684790.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    titlePre: "A Consulting Partner for Startups Ready to ",
-    titleAccent: "Scale.",
-    subtitle: "From strategic planning to digital transformation, we help growing companies make better decisions, move faster.",
-    trustedLabel: "Trusted by innovative companies",
-    logos: ["◐ CloudWatch", "⚡ Boltshift", "▤ Epicurious", "⚡ Sisyphus", "✳ Nietzsche", "Ⓠ Quotient", "◍ Capsule"]
+    image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
+    titlePre: "Elevate Your Brand with High-Impact ",
+    titleAccent: "Short-Form Videos.",
+    subtitle: "Kami membantu kreator, founder, dan bisnis mengubah ide menjadi konten TikTok, Reels, dan Shorts yang viral, engaging, dan berkonversi tinggi.",
+    trustedLabel: "Dipercaya oleh kreator & brand modern",
+    logos: ["⚡ TikTok Viral", "◎ Instagram Reels", "▶ YouTube Shorts", "✦ High Retention", "▲ Fast Pacing", "★ Storytelling"]
   },
   services: {
-    eyebrow: "What We Do",
-    titlePre: "We Help Startups Scale With ",
-    titleAccent: "Clarity.",
-    subtitle: "We combine strategic insight, operational expertise, and modern technology to build scalable systems that drive real growth.",
+    eyebrow: "Pilihan Paket",
+    titlePre: "Solusi Editing Sesuai Kebutuhan & ",
+    titleAccent: "Level Bisnis Anda.",
+    subtitle: "Dari konten harian yang konsisten hingga produksi visual tingkat tinggi dengan arahan kreatif mendalam.",
     cards: [
       {
-        icon: "▤",
-        title: "Growth Blueprint",
-        desc: "For founders who feel stuck between ideas and execution. We help you define your path forward.",
-        price: "$2,500",
-        priceUnit: "/project",
+        icon: "⚡",
+        title: "BARU GAJIAN",
+        desc: "Paket Basic / Entry Level — Cocok untuk personal creator, pemula, dan UMKM yang ingin mulai aktif konsisten bikin konten.",
+        price: "Mulai dari",
+        priceUnit: "Entry Level",
         features: [
-          "Deep business & market breakdown",
-          "Clear growth priorities",
-          "Strategic roadmap tailored to your stage",
-          "2x private strategy sessions"
+          "Editing video pendek TikTok, Reels & Shorts",
+          "Subtitle dinamis & penyesuaian audio jernih",
+          "Musik, sound effect (SFX) & transisi seperlunya",
+          "Mengikuti konsep / referensi dari klien",
+          "Revisi minor hingga pas"
         ],
-        cta: "Get Started"
+        cta: "Pilih Paket Baru Gajian"
       },
       {
-        icon: "⬡",
-        title: "Scale Systems",
-        desc: "Growth breaks messy systems. We redesign your operations, workflows, and tools.",
-        price: "$5,000",
-        priceUnit: "/project",
+        icon: "★",
+        title: "CEO DADAKAN",
+        desc: "Paket Middle / Rekomendasi Utama — Didesain khusus untuk personal branding, kreator konten, dan pengusaha yang butuh retensi tinggi.",
+        price: "Paling Populer",
+        priceUnit: "Recommended",
         features: [
-          "Full operations & workflow audit",
-          "Process simplification & optimization",
-          "Tooling & system recommendations",
-          "Implementation guidance with your team"
+          "Semua keunggulan paket Baru Gajian",
+          "Storytelling & pacing dinamis penahan retensi",
+          "Visual Hook 3 detik pertama pencegah scroll-away",
+          "Kurasi footage B-roll & penekanan poin penting",
+          "Gaya visual disesuaikan dengan personal identity klien"
         ],
-        cta: "Get Started"
+        cta: "Pilih Paket CEO Dadakan"
+      },
+      {
+        icon: "👑",
+        title: "SUDAH IPO",
+        desc: "Paket Premium / High-End — Untuk bisnis mapan, high-value creator, dan korporat yang butuh infrastruktur produksi kelas atas.",
+        price: "Custom / Scale",
+        priceUnit: "Enterprise",
+        features: [
+          "Creative direction & storyline mendalam",
+          "Branding visual premium & motion graphics custom",
+          "Sistem produksi terjadwal untuk batch rutin",
+          "Integrasi AI & workflow otomatisasi cepat",
+          "Dukungan prioritas & konsultasi strategi konten"
+        ],
+        cta: "Konsultasi Paket IPO"
       }
     ]
   },
   process: {
-    eyebrow: "How We Work",
-    titlePre: "A Clear Process That Drives ",
-    titleAccent: "Result.",
-    subtitle: "Every engagement follows a focused path from first conversation to measurable outcomes."
+    eyebrow: "Alur Kerja",
+    titlePre: "Proses Pemesanan & Produksi yang ",
+    titleAccent: "Cepat & Rapi.",
+    subtitle: "4 langkah mudah dari pengiriman raw footage hingga video siap tayang dan mendatangkan audiens."
   },
-  // Galeri/portofolio: grid foto tanpa jarak/pembatas di halaman utama. Diedit lewat tab "Galeri" di dashboard.
   gallery: {
-    eyebrow: "Our Work",
-    titlePre: "Explore Our ",
-    titleAccent: "Portfolio.",
-    subtitle: "A closer look at the projects, sessions, and moments behind our work with founders.",
+    eyebrow: "Portofolio",
+    titlePre: "Karya & Format ",
+    titleAccent: "Video Kami.",
+    subtitle: "Lihat contoh visual hook, pacing dinamis, dan grading estetik untuk berbagai genre konten vertikal.",
     items: [
-      { image: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800", title: "Brand Strategy", category: "Consulting" },
-      { image: "https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=800", title: "Product Launch", category: "Growth" },
-      { image: "https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=800", title: "Team Workshop", category: "Process" },
-      { image: "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=800", title: "Market Research", category: "Strategy" },
-      { image: "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=800", title: "Scale Systems", category: "Operations" },
-      { image: "https://images.pexels.com/photos/3182773/pexels-photo-3182773.jpeg?auto=compress&cs=tinysrgb&w=800", title: "Client Meeting", category: "Consulting" }
+      { image: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=800&q=80", title: "Visual Hook & High Retention", category: "TikTok & Reels" },
+      { image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80", title: "Personal Branding Creator", category: "Shorts" },
+      { image: "https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80", title: "Dynamic Sound Design & SFX", category: "Audio Sync" },
+      { image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80", title: "Podcast & Talking Head Cut", category: "Interview" },
+      { image: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80", title: "Product Showcase & Ads", category: "Commercial" },
+      { image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80", title: "Cinematic B-Roll & Color", category: "Cinematic" }
     ],
-    // Jarak antara grid foto kecil dengan blok showcase besar di bawahnya (px). Diatur admin lewat slider di dashboard.
     showcaseGap: 40,
-    // Blok showcase besar (gambar + teks raksasa) yang tampil di paling bawah section Galeri.
     showcase: {
-      image: "https://images.pexels.com/photos/1637859/pexels-photo-1637859.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      image: "https://images.unsplash.com/photo-1535016120720-40c646be5580?auto=format&fit=crop&w=1600&q=80",
       label: "Featured Project",
-      title: "Excellence"
+      title: "Cromans Cinematic"
     }
   },
   footer: {
-    tagline: "We help startups and growing businesses make better decisions, move faster.",
-    email: "hello@avenor.com",
-    address: "8502 Preston Rd, Inglewood,<br>Maine 98380",
-    // Setiap link: { label, type, target }
-    // type "section" -> target = id section di index.html ("top" utk paling atas)
-    // type "page"    -> target = slug halaman (isi konten diatur di tab Halaman)
-    // type "url"     -> target = alamat link luar
+    tagline: "Cromans — Partner editing video short-form terpercaya untuk kreator, personal branding, dan bisnis yang ingin melejit di media sosial.",
+    email: "halo@cromans.com",
+    address: "Jakarta, Indonesia<br>Available Worldwide Remotely",
     quickLinks: [
       { label: "Home", type: "section", target: "top" },
-      { label: "About Us", type: "page", target: "about-us" },
-      { label: "Our Services", type: "section", target: "services" },
-      { label: "Process", type: "section", target: "process" },
-      { label: "Pricing", type: "section", target: "services" }
+      { label: "Paket & Harga", type: "section", target: "services" },
+      { label: "Portofolio", type: "section", target: "gallery" },
+      { label: "Alur Kerja", type: "section", target: "process" }
     ],
     supportLinks: [
       { label: "FAQ", type: "page", target: "faq" },
-      { label: "Privacy Policy", type: "page", target: "privacy-policy" },
-      { label: "Terms of Service", type: "page", target: "terms-of-service" },
-      { label: "Contact Us", type: "page", target: "contact-us" }
+      { label: "Tentang Kami", type: "page", target: "about-us" },
+      { label: "Hubungi Kami", type: "page", target: "contact-us" }
     ],
-    copyright: "© 2026 Avenor. All rights reserved"
+    copyright: "© 2026 Cromans. All rights reserved"
   },
-  // Konten halaman-halaman terpisah (dibuka lewat page.html?slug=...), dikelola di tab "Halaman"
-  // Tiap halaman punya "blocks": array blok konten dengan tipe berbeda-beda:
-  // { type:"text", content }  |  { type:"faq", items:[{q,a}] }
-  // { type:"contact", items:[{label,value}] } (value email/nomor otomatis jadi link mailto/tel)
   pages: {
-    "about-us": { title: "About Us", blocks: [
-      { type: "text", content: "Tulis konten halaman About Us di sini lewat tab Halaman di dashboard." }
+    "about-us": { title: "Tentang Cromans", blocks: [
+      { type: "text", content: "Cromans adalah studio pasca-produksi konten vertikal (TikTok, Instagram Reels, dan YouTube Shorts). Kami fokus pada retensi audiens, hook visual yang kuat, dan storytelling yang membantu kreator serta brand meningkatkan engagement dan konversi penjualan." }
     ]},
-    "faq": { title: "FAQ", blocks: [
+    "faq": { title: "FAQ (Pertanyaan Umum)", blocks: [
       { type: "faq", items: [
-        { q: "Bagaimana cara memulai konsultasi dengan Avenor?", a: "Klik tombol \"Book Consultation\" di halaman utama, isi form singkatnya, dan tim kami akan menghubungi kamu." },
-        { q: "Berapa lama proses konsultasinya?", a: "Tergantung paket yang dipilih, biasanya berkisar 2–6 minggu." }
+        { q: "Bagaimana alur pemesanan jasa editing di Cromans?", a: "Pilih paket yang sesuai di halaman utama, klik Order/Pesan, isi form kebutuhan video Anda beserta link footage (Google Drive/Dropbox). Setelah submit, Anda bisa langsung konfirmasi ke WhatsApp kami." },
+        { q: "Berapa lama proses pengerjaan 1 video?", a: "Rata-rata 24–48 jam untuk paket Baru Gajian & CEO Dadakan. Untuk paket skala besar atau batch rutin didiskusikan sesuai jadwal tayang Anda." },
+        { q: "Bagaimana cara kirim bahan/footage video?", a: "Cukup upload video mentah dan aset ke Google Drive / Dropbox / WeTransfer, lalu lampirkan link-nya pada form pemesanan." },
+        { q: "Apakah ada garansi revisi?", a: "Ya! Setiap paket sudah mencakup revisi minor (audio, teks/subtitle, dan pacing) hingga Anda puas dengan hasilnya." }
       ]}
     ]},
-    "privacy-policy": { title: "Privacy Policy", blocks: [
-      { type: "text", content: "Tulis kebijakan privasi di sini lewat tab Halaman di dashboard." }
-    ]},
-    "terms-of-service": { title: "Terms of Service", blocks: [
-      { type: "text", content: "Tulis syarat & ketentuan layanan di sini lewat tab Halaman di dashboard." }
-    ]},
-    "contact-us": { title: "Contact Us", blocks: [
+    "contact-us": { title: "Hubungi Kami", blocks: [
       { type: "contact", items: [
-        { label: "Email", value: "hello@avenor.com" },
-        { label: "Phone", value: "+1 (555) 123-4567" },
-        { label: "Address", value: "8502 Preston Rd, Inglewood, Maine 98380" }
+        { label: "Email", value: "halo@cromans.com" },
+        { label: "WhatsApp", value: "+62 812-3456-7890" },
+        { label: "Instagram", value: "@cromans.media" }
       ]}
     ]}
   },
-  // Judul & subjudul di halaman booking (step form konsultasi)
   bookingHero: {
-    titlePre: "Let's Build Your Growth ",
-    titleAccent: "Strategy.",
-    subtitle: "Tell us about your business so we can understand your goals and challenges better."
+    titlePre: "Mulai Project Video Anda Bersama ",
+    titleAccent: "Cromans.",
+    subtitle: "Isi form singkat di bawah ini mengenai kebutuhan konten Anda, kirimkan bahan mentah, dan kami siap eksekusi."
   },
-  // Skema field form booking. Setiap field: { id, label, type, placeholder, required, step, options }
-  // type: "text" | "email" | "tel" | "textarea" | "select"
-  // step: 1 (Your Information) atau 2 (Business Details)
-  // options: dipakai kalau type === "select"
   bookingForm: [
-    { id: "name", label: "Full Name", type: "text", placeholder: "Your full name", required: true, step: 1, options: [] },
-    { id: "email", label: "Work Email", type: "email", placeholder: "youremail@company.com", required: true, step: 1, options: [] },
-    { id: "title", label: "Job Title", type: "text", placeholder: "e.g. CEO, Founder, Product Manager", required: false, step: 1, options: [] },
-    { id: "company", label: "Company Name", type: "text", placeholder: "Your company name", required: false, step: 1, options: [] },
-    { id: "phone", label: "Phone Number", type: "tel", placeholder: "Your phone number", required: false, step: 1, options: [] },
-    { id: "stage", label: "Company Stage", type: "select", placeholder: "", required: false, step: 2, options: ["Idea / Pre-seed", "Early Stage / Seed", "Growth Stage / Series A+", "Established Business"] },
-    { id: "service", label: "What do you need help with?", type: "select", placeholder: "", required: false, step: 2, options: ["Growth Blueprint", "Scale Systems", "Not sure yet"], linkedTo: "services" },
-    { id: "goals", label: "Tell us about your goals", type: "textarea", placeholder: "Share a bit about your business and what you're hoping to achieve...", required: false, step: 2, options: [] }
+    { id: "name", label: "Nama Lengkap / Brand", type: "text", placeholder: "Nama Anda atau nama brand/channel", required: true, step: 1, options: [] },
+    { id: "whatsapp", label: "Nomor WhatsApp (Aktif)", type: "tel", placeholder: "Contoh: 081234567890", required: true, step: 1, options: [] },
+    { id: "email", label: "Alamat Email", type: "email", placeholder: "email@anda.com", required: true, step: 1, options: [] },
+    { id: "social", label: "Akun Medsos / Channel", type: "text", placeholder: "Username TikTok / IG / YouTube", required: false, step: 1, options: [] },
+    { id: "service", label: "Pilihan Paket Editing", type: "select", placeholder: "", required: true, step: 2, options: ["CEO DADAKAN (Paling Populer)", "BARU GAJIAN (Entry Level)", "SUDAH IPO (Premium Custom)", "Konsultasi / Custom Batch"] },
+    { id: "footage_url", label: "Link Bahan / Raw Footage", type: "text", placeholder: "Link Google Drive / Dropbox / WeTransfer (Pastikan sudah open access)", required: true, step: 2, options: [] },
+    { id: "reference_url", label: "Referensi Video / Gaya yang Disukai", type: "text", placeholder: "Link video TikTok/Reels contoh gaya editing yang dimau", required: false, step: 2, options: [] },
+    { id: "goals", label: "Catatan Tambahan & Instruksi Khusus", type: "textarea", placeholder: "Jelaskan pesan utama, target audiens, arahan hook, atau musik yang diinginkan...", required: false, step: 2, options: [] }
   ]
 };
 
